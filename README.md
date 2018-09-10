@@ -1,1 +1,1 @@
-# cl-chess
+The creation of a command line chess game following The Odin Project.

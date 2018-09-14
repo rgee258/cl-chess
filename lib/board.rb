@@ -6,6 +6,8 @@ class Board
     @board = []
   end
 
+  # Game setup
+
   def create_board
   	8.times do
   		@board.push([nil, nil, nil, nil, nil, nil, nil, nil])
@@ -13,12 +15,12 @@ class Board
   end
 
   def add_pieces
-  	@board.add_kings
-  	@board.add_queens
-  	@board.add_bishops
-  	@board.add_knights
-  	@board.add_rooks
-  	@board.add_pawns
+  	add_kings
+  	add_queens
+  	add_bishops
+  	add_knights
+  	add_rooks
+  	add_pawns
   end
 
   def add_kings
@@ -71,11 +73,44 @@ class Board
   	@board[6][7] = Piece.new("P", "white")
   end
 
-  def move_piece
+  def display_board
+    display = ""
+
+    @board.each do |row|
+      display << "-----------------\n"
+      row.each do |col|
+        if col.nil?
+          display << "| "
+        else
+          display << "|#{col.type}"
+        end
+      end
+      display << "|\n"
+    end
+    display << "-----------------"
+ 
+    display
+  end
+
+  def move_piece(start, finish)
+
+    # If we're moving to a place that's nil just point that piece there and make the original nil
+    # If we're capturing a piece, make the finish position nil, change it to the original, and then nil the origin
+
+    # Return a string stating the move OR
+    # Return that the move was invalid
   end
 
   def valid_move?
   	# Going need to call a number of methods available for checking the different pieces
+    # Check criteria: start nil, invalid start piece, invalid end pos
+  end
+
+  def valid_queen?
+    moves = []
+
+    # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
+    # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
   end
 
   def check?

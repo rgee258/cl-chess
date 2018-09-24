@@ -114,45 +114,114 @@ class Board
     # Return that the move was invalid
 
     # Call example: valid_move?(@board[start[0]][start[1]].type, turn_color, )
-  end
-
-  def valid_move?(type, turn_color, valid_start, valid_finish)
-  	# Going need to call a number of methods available for checking the different pieces
-    # Check criteria: start nil, invalid start piece, invalid end pos
-    if (type == "K")
-      # Call validity checks
+    if (valid_move?(start, finish, turn_color))
+      @board[finish[0]][finish[1]] = @board[start[0]][start[1]]
+      @board[start[0]][start[1]] = nil
     end
   end
 
-  def valid_queen?(valid_start, valid_finish)
+  def valid_move?(start, finish, turn_color)
+  	# Going need to call a number of methods available for checking the different pieces
+    # Check criteria: start nil, invalid start piece, invalid end pos
+    piece_type = @board[start[0]][start[1]].type
+
+    if (piece_type == "K")
+      # Call validity checks
+    elsif (piece_type == "P")
+      return valid_pawn?(start, finish, turn_color)
+    end
+
+    false
+  end
+
+  def valid_queen?(start, finish)
     moves = []
 
     # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
     # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
   end
 
-  def valid_pawn_white?(valid_start, valid_finish)
+  def valid_pawn?(start, finish, turn_color)
     moves = []
 
     # Case for moving forward
     # Case for moving diagonally left or right if an opposite piece is there except for a king
-    if (valid_start[0] > 0)
-      if (@board[valid_start[0] - 1][valid_start[1]].nil?)
-        # Push to move the forward movement
+    if (turn_color == "white")
+      if (start[0] > 0)
+        # Moving forward by 1
+        if (@board[start[0] - 1][start[1]].nil?)
+          moves.push([start[0] - 1, start[1]])
+        end
+
+        # Moving forward by 2 if the pawn hasn't moved
+        if (@board[start[0]][start[1]].move_counter == 0)
+          if (@board[start[0] - 2][start[1]].nil?)
+            moves.push([start[0] - 2, start[1]])
+          end
+        end
+
+        # Check the diagonal left for a capture piece
+        unless (@board[start[0] - 1][start[1] - 1].nil?)
+          if (@board[start[0] - 1][start[1] - 1].color != turn_color && 
+            @board[start[0] - 1][start[1] - 1].type != "K")
+            moves.push([start[0] - 1, start[1] - 1])
+          end
+        end
+
+        # Check the diagonal right for a capture piece
+        unless (@board[start[0] - 1][start[1] + 1].nil?)
+          if (@board[start[0] - 1][start[1] + 1].color != turn_color && 
+            @board[start[0] - 1][start[1] + 1].type != "K")
+            moves.push([start[0] - 1, start[1] + 1])
+          end
+        end
       end
-
-      # Code for checking if the diagonal left and right are valid for capturing
     end
+
+    if (turn_color == "black")
+      if (start[0] < 7)
+        # Moving forward by 1
+        if (@board[start[0] + 1][start[1]].nil?)
+          moves.push([start[0] + 1, start[1]])
+        end
+
+        # Moving forward by 2 if the pawn hasn't moved
+        if (@board[start[0]][start[1]].move_counter == 0)
+          if (@board[start[0] + 2][start[1]].nil?)
+            moves.push([start[0] + 2, start[1]])
+          end
+        end
+
+        # Check the diagonal left for a capture piece
+        unless (@board[start[0] + 1][start[1] - 1].nil?)
+          if (@board[start[0] + 1][start[1] - 1].color != turn_color && 
+            @board[start[0] + 1][start[1] - 1].type != "K")
+            moves.push([start[0] + 1, start[1] - 1])
+          end
+        end
+
+        # Check the diagonal right for a capture piece
+        unless (@board[start[0] + 1][start[1] + 1].nil?)
+          if (@board[start[0] + 1][start[1] + 1].color != turn_color && 
+            @board[start[0] + 1][start[1] + 1].type != "K")
+            moves.push([start[0] + 1, start[1] + 1])
+          end
+        end
+      end
+    end
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
   end
 
-  def valid_pawn_black?(valid_start, valid_finish)
-    moves = []
+  def promotion_check
   end
 
-  def promotion_white
-  end
-
-  def promotion_black
+  def promotion_choice
   end
 
   def check?

@@ -157,4 +157,42 @@ describe Board do
 		end
 	end
 
+	describe "#valid_pawn?" do
+		context "given a starting board" do
+			it "returns true moving the left most white pawn forward once" do
+				@game_board.create_board
+				@game_board.add_pieces
+				expect(@game_board.valid_pawn?([6, 0], [5, 0], "white")).to eql(true)
+			end
+
+			it "returns true moving the left most white pawn forward twice from start" do
+				@game_board.create_board
+				@game_board.add_pieces
+				expect(@game_board.valid_pawn?([6, 0], [4, 0], "white")).to eql(true)
+			end
+		end
+
+		context "given a board where the second left white pawn can capture" do
+			it "returns true when the left diagonal piece is capturable" do
+				@game_board.create_board
+				@game_board.add_pieces
+				@game_board.move_piece([1, 0], [3, 0], "black")
+				@game_board.move_piece([3, 0], [4, 0], "black")
+				@game_board.move_piece([6, 1], [5, 1], "white")
+				expect(@game_board.valid_pawn?([5, 1], [4, 0], "white")).to eql(true)
+			end
+
+			it "returns true when the right diagonal piece is capturable" do
+				@game_board.create_board
+				@game_board.add_pieces
+				@game_board.move_piece([1, 2], [3, 2], "black")
+				@game_board.move_piece([3, 2], [4, 2], "black")
+				@game_board.move_piece([6, 1], [5, 1], "white")
+				expect(@game_board.valid_pawn?([5, 1], [4, 2], "white")).to eql(true)
+			end
+		end
+
+
+	end
+
 end

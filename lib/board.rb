@@ -92,25 +92,67 @@ class Board
     display
   end
 
-  def move_piece(start, finish)
+  def move_piece(start, finish, turn_color)
 
-    # If we're moving to a place that's nil just point that piece there and make the original nil
+    # HOW do we keep track of which side's piece can move for the current turn?
+    # Perhaps pass in the current color and do it that way for the starting piece?
+
+    # If we're starting at a place that's nil just point that piece there and make the original nil
     # If we're capturing a piece, make the finish position nil, change it to the original, and then nil the origin
+
+    # Invalid start piece movement
+    if (@board[start[0]][start[1]].nil?)
+      return "Invalid piece movement, try again."
+    end
+
+    # Invalid starting piece color
+    if (@board[start[0]][start[1]].color != turn_color) 
+      return "Invalid piece movement, try again."
+    end
 
     # Return a string stating the move OR
     # Return that the move was invalid
+
+    # Call example: valid_move?(@board[start[0]][start[1]].type, turn_color, )
   end
 
-  def valid_move?
+  def valid_move?(type, turn_color, valid_start, valid_finish)
   	# Going need to call a number of methods available for checking the different pieces
     # Check criteria: start nil, invalid start piece, invalid end pos
+    if (type == "K")
+      # Call validity checks
+    end
   end
 
-  def valid_queen?
+  def valid_queen?(valid_start, valid_finish)
     moves = []
 
     # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
     # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
+  end
+
+  def valid_pawn_white?(valid_start, valid_finish)
+    moves = []
+
+    # Case for moving forward
+    # Case for moving diagonally left or right if an opposite piece is there except for a king
+    if (valid_start[0] > 0)
+      if (@board[valid_start[0] - 1][valid_start[1]].nil?)
+        # Push to move the forward movement
+      end
+
+      # Code for checking if the diagonal left and right are valid for capturing
+    end
+  end
+
+  def valid_pawn_black?(valid_start, valid_finish)
+    moves = []
+  end
+
+  def promotion_white
+  end
+
+  def promotion_black
   end
 
   def check?

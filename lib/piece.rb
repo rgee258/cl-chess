@@ -1,11 +1,11 @@
 class Piece
 
-	attr_accessor :type, :color, :moved
+	attr_accessor :type, :color, :move_counter
 
 	def initialize(type, color)
 		@type = type
 		@color = color
-		@moved = false
+		@move_counter = 0
 	end
 
 end

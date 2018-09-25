@@ -65,8 +65,8 @@ class Game
       move_end = gets.chomp.downcase
     end
 
-    move_start.split("").each {|chr| start.push(convert_to_index(chr))}
-    move_finish.split("").each {|chr| finish.push(convert_to_index(chr))}
+    move_start.split("").each {|chr| start.unshift(convert_to_index(chr))}
+    move_finish.split("").each {|chr| finish.unshift(convert_to_index(chr))}
 
   	# add logic for figuring out move and coordinates into board
     # will likely need to make this into an if statement based on string return
@@ -74,12 +74,12 @@ class Game
   end
 
   def convert_to_index(chr)
-    position_swaps = {"a" => 7, "b" => 6, "c" => 5, "d" => 4, "e" => 3, "f" => 2, 
-      "g" => 1, "h" => 0}
-    coord = -5
+    position_swaps = {"a" => 0, "b" => 1, "c" => 2, "d" => 3, "e" => 4, "f" => 5, 
+      "g" => 6, "h" => 7}
 
+    coord = -5
     if (position_swaps[chr].nil?)
-      coord = chr.to_i - 1
+      coord = (chr.to_i - 8).abs
     else
       coord = position_swaps[chr]
     end

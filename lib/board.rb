@@ -117,7 +117,18 @@ class Board
     if (valid_move?(start, finish, turn_color))
       @board[finish[0]][finish[1]] = @board[start[0]][start[1]]
       @board[start[0]][start[1]] = nil
+      "Piece moved."
+    else
+      # Castling movement
+      if (@board[start[0]][start[1]].type == "K" && @board[start[0]][start[1]].move_counter == 0)
+        "Invalid piece movement, try again."
+      end
     end
+  end
+
+  def castling
+    # Code for castling here
+    "Castling performed."
   end
 
   def valid_move?(start, finish, turn_color)
@@ -127,6 +138,8 @@ class Board
 
     if (piece_type == "K")
       # Call validity checks
+    elsif (piece_type == "N")
+      return valid_knight?(start, finish, turn_color)  
     elsif (piece_type == "P")
       return valid_pawn?(start, finish, turn_color)
     end
@@ -139,6 +152,89 @@ class Board
 
     # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
     # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
+  end
+
+  def valid_knight?(start, finish, turn_color)
+    moves = []
+
+    # Up 2, left 1
+    if (start[0] > 1 && start[1] > 0)
+      if (@board[start[0] - 2][start[1] - 1].nil?)
+        moves.push([start[0] - 2, start[1] - 1])
+      elsif (@board[start[0] - 2][start[1] - 1].color != turn_color)
+        moves.push([start[0] - 2, start[1] - 1])
+      end
+    end
+
+    # Up 2, right 1
+    if (start[0] > 1 && start[1] < 7)
+      if (@board[start[0] - 2][start[1] + 1].nil?)
+        moves.push([start[0] - 2, start[1] + 1])
+      elsif (@board[start[0] - 2][start[1] + 1].color != turn_color)
+        moves.push([start[0] - 2, start[1] + 1])
+      end
+    end
+
+    # Left 2, up 1
+    if (start[0] > 0 && start[1] > 1)
+      if (@board[start[0] - 1][start[1] - 2].nil?)
+        moves.push([start[0] - 1, start[1] - 2])
+      elsif (@board[start[0] - 1][start[1] - 2].color != turn_color)
+        moves.push([start[0] - 1, start[1] - 2])
+      end
+    end
+
+    # Left 2, down 1
+    if (start[0] < 7 && start[1] > 1)
+      if (@board[start[0] + 1][start[1] - 2].nil?)
+        moves.push([start[0] + 1, start[1] - 2])
+      elsif (@board[start[0] + 1][start[1] - 2].color != turn_color)
+        moves.push([start[0] + 1, start[1] - 2])
+      end
+    end
+
+    # Right 2, up 1
+    if (start[0] > 0 && start[1] < 6)
+      if (@board[start[0] - 1][start[1] + 2].nil?)
+        moves.push([start[0] - 1, start[1] + 2])
+      elsif (@board[start[0] - 1][start[1] + 2].color != turn_color)
+        moves.push([start[0] - 1, start[1] + 2])
+      end
+    end
+
+    # Right 2, down 1
+    if (start[0] < 7 && start[1] < 6)
+      if (@board[start[0] + 1][start[1] + 2].nil?)
+        moves.push([start[0] + 1, start[1] + 2])
+      elsif (@board[start[0] + 1][start[1] + 2].color != turn_color)
+        moves.push([start[0] + 1, start[1] + 2])
+      end
+    end
+
+    # Down 2, left 1
+    if (start[0] < 6 && start[1] > 0)
+      if (@board[start[0] + 2][start[1] - 1].nil?)
+        moves.push([start[0] + 2, start[1] - 1])
+      elsif (@board[start[0] + 2][start[1] - 1].color != turn_color)
+        moves.push([start[0] + 2, start[1] - 1])
+      end
+    end
+
+    # Down 2, right 1
+    if (start[0] < 6 && start[1] < 7)
+      if (@board[start[0] + 2][start[1] + 1].nil?)
+        moves.push([start[0] + 2, start[1] + 1])
+      elsif (@board[start[0] + 2][start[1] + 1].color != turn_color)
+        moves.push([start[0] + 2, start[1] + 1])
+      end
+    end
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
   end
 
   def valid_pawn?(start, finish, turn_color)

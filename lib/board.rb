@@ -138,6 +138,8 @@ class Board
 
     if (piece_type == "K")
       # Call validity checks
+    elsif (piece_type == "R")
+      return valid_rook?(start, finish, turn_color) 
     elsif (piece_type == "N")
       return valid_knight?(start, finish, turn_color)  
     elsif (piece_type == "P")
@@ -147,11 +149,79 @@ class Board
     false
   end
 
-  def valid_queen?(start, finish)
+  def valid_queen?(start, finish, turn_color)
     moves = []
 
     # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
     # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
+  end
+
+  def valid_rook?(start, finish, turn_color)
+    moves = []
+    check = -5
+
+    # All moves going up
+    check = start[0]
+    while (check > 0)
+      if (@board[check - 1][start[1]].nil?)
+        moves.push([check - 1, start[1]])
+      elsif (@board[check - 1][start[1]].color != turn_color)
+        moves.push([check - 1, start[1]])
+        break
+      elsif (@board[check - 1][start[1]].color == turn_color)
+        break
+      end
+      check -= 1
+    end
+
+    # All moves going down
+    check = start[0]
+    while (check < 7)
+      if (@board[check + 1][start[1]].nil?)
+        moves.push([check + 1, start[1]])
+      elsif (@board[check + 1][start[1]].color != turn_color)
+        moves.push([check + 1, start[1]])
+        break
+      elsif (@board[check + 1][start[1]].color == turn_color)
+        break
+      end
+      check += 1
+    end
+
+    # All moves going left
+    check = start[1]
+    while (check > 0)
+      if (@board[start[0]][check - 1].nil?)
+        moves.push([start[0], check - 1])
+      elsif (@board[start[0]][check - 1].color != turn_color)
+        moves.push([start[0], check - 1])
+        break
+      elsif (@board[start[0]][check - 1].color == turn_color)
+        break
+      end
+      check -= 1
+    end
+
+    # All moves going right
+    check = start[1]
+    while (check < 7)
+      if (@board[start[0]][check + 1].nil?)
+        moves.push([start[0], check + 1])
+      elsif (@board[start[0]][check + 1].color != turn_color)
+        moves.push([start[0], check + 1])
+        break
+      elsif (@board[start[0]][check + 1].color == turn_color)
+        break
+      end
+      check += 1
+    end
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
   end
 
   def valid_knight?(start, finish, turn_color)

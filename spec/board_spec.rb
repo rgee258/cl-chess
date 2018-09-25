@@ -191,8 +191,92 @@ describe Board do
 				expect(@game_board.valid_pawn?([5, 1], [4, 2], "white")).to eql(true)
 			end
 		end
-
-
 	end
 
+
+	describe "#valid_knight?" do
+		context "given only knights moving the left white knight" do
+			it "returns true moving a white knight at c3 up 2 and left 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [3, 1], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 up 2 and right 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [3, 3], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 left 2 and up 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [4, 0], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 left 2 and down 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [6, 0], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 right 2 and up 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [4, 4], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 right 2 and down 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [6, 4], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 down 2 and left 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [7, 1], "white")).to eql(true)
+			end
+
+			it "returns true moving a white knight at c3 down 2 and right 1" do
+				@game_board.create_board
+				@game_board.add_knights
+				@game_board.move_piece([7, 1], [5, 2], "white")
+				expect(@game_board.valid_knight?([5, 2], [7, 3], "white")).to eql(true)
+			end
+		end
+	end
+
+	context "given starting knights" do
+		it "returns false moving the left white knight down 2 and left 1" do
+			@game_board.create_board
+			@game_board.add_knights
+			expect(@game_board.valid_knight?([7, 1], [9, 0], "white")).to eql(false)
+		end
+
+		it "returns false moving the right white knight down 2 and right 1" do
+			@game_board.create_board
+			@game_board.add_knights
+			expect(@game_board.valid_knight?([7, 6], [9, 7], "white")).to eql(false)
+		end
+
+		it "returns false moving the left black knight up 2 and left 1" do
+			@game_board.create_board
+			@game_board.add_knights
+			expect(@game_board.valid_knight?([0, 1], [-2, 0], "white")).to eql(false)
+		end
+
+		it "returns false moving the right black knight up 2 and right 1" do
+			@game_board.create_board
+			@game_board.add_knights
+			expect(@game_board.valid_knight?([0, 6], [-2, 7], "white")).to eql(false)
+		end
+	end
 end

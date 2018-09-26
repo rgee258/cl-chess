@@ -138,6 +138,7 @@ class Board
 
     # Call validity checks based on piece type
     if (piece_type == "K")
+      return valid_king?(start, finish, turn_color)
     elsif (piece_type == "Q")
       return valid_queen?(start, finish, turn_color)
     elsif (piece_type == "B")
@@ -153,9 +154,95 @@ class Board
     false
   end
 
+  def valid_king?(start, finish, turn_color)
+    moves = []
+
+    # Move up
+    if (start[0] > 0)
+      if (@board[start[0] - 1][start[1]].nil?)
+        moves.push([start[0] - 1, start[1]])
+      elsif (@board[start[0] - 1][start[1]].color != turn_color)
+        moves.push([start[0] - 1, start[1]])
+      end
+
+      # Move up and left
+      if (start[1] > 0)
+        if (@board[start[0] - 1][start[1] - 1].nil?)
+          moves.push([start[0] - 1, start[1] - 1])
+        elsif (@board[start[0] - 1][start[1] - 1].color != turn_color)
+          moves.push([start[0] - 1, start[1] - 1])
+        end
+      end
+
+      # Move up and right
+      if (start[1] < 7)
+        if (@board[start[0] - 1][start[1] + 1].nil?)
+          moves.push([start[0] - 1, start[1] + 1])
+        elsif (@board[start[0] - 1][start[1] + 1].color != turn_color)
+          moves.push([start[0] - 1, start[1] + 1])
+        end
+      end
+    end
+
+    # Move down
+    if (start[0] < 7)
+      if (@board[start[0] + 1][start[1]].nil?)
+        moves.push([start[0] + 1, start[1]])
+      elsif (@board[start[0] + 1][start[1]].color != turn_color)
+        moves.push([start[0] + 1, start[1]])
+      end
+
+      # Move up and left
+      if (start[1] > 0)
+        if (@board[start[0] + 1][start[1] - 1].nil?)
+          moves.push([start[0] + 1, start[1] - 1])
+        elsif (@board[start[0] + 1][start[1] - 1].color != turn_color)
+          moves.push([start[0] + 1, start[1] - 1])
+        end
+      end
+
+      # Move up and right
+      if (start[1] < 7)
+        if (@board[start[0] + 1][start[1] + 1].nil?)
+          moves.push([start[0] + 1, start[1] + 1])
+        elsif (@board[start[0] + 1][start[1] + 1].color != turn_color)
+          moves.push([start[0] + 1, start[1] + 1])
+        end
+      end
+    end
+
+    # Move left
+    if (start[1] > 0)
+      if (@board[start[0]][start[1] - 1].nil?)
+        moves.push([start[0], start[1] - 1])
+      elsif (@board[start[0]][start[1] - 1].color != turn_color)
+        moves.push([start[0], start[1] - 1])
+      end
+    end
+
+    # Move right
+    if (start[1] < 7)
+      if (@board[start[0]][start[1] + 1].nil?)
+        moves.push([start[0], start[1] + 1])
+      elsif (@board[start[0]][start[1] + 1].color != turn_color)
+        moves.push([start[0], start[1] + 1])
+      end
+    end
+
+    # ---Check here for removing moves that place you in check?
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
+
+  end
+
   def valid_queen?(start, finish, turn_color)
     moves = []
-    check  = -5
+    check = -5
 
     # Use path finding from the rook
 

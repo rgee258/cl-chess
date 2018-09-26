@@ -136,8 +136,12 @@ class Board
     # Check criteria: start nil, invalid start piece, invalid end pos
     piece_type = @board[start[0]][start[1]].type
 
+    # Call validity checks based on piece type
     if (piece_type == "K")
-      # Call validity checks
+    elsif (piece_type == "Q")
+      return valid_queen?(start, finish, turn_color)
+    elsif (piece_type == "B")
+      return valid_bishop?(start, finish, turn_color)
     elsif (piece_type == "R")
       return valid_rook?(start, finish, turn_color) 
     elsif (piece_type == "N")
@@ -151,9 +155,206 @@ class Board
 
   def valid_queen?(start, finish, turn_color)
     moves = []
+    check  = -5
 
-    # Take every direction, loop possible moves in that direction until it reaches a piece or end of the board
-    # If a piece is reached, check the type and color of the piece and if valid, add it to the list of available moves
+    # Use path finding from the rook
+
+    # All moves going up
+    check = start[0]
+    while (check > 0)
+      if (@board[check - 1][start[1]].nil?)
+        moves.push([check - 1, start[1]])
+      elsif (@board[check - 1][start[1]].color != turn_color)
+        moves.push([check - 1, start[1]])
+        break
+      elsif (@board[check - 1][start[1]].color == turn_color)
+        break
+      end
+      check -= 1
+    end
+
+    # All moves going down
+    check = start[0]
+    while (check < 7)
+      if (@board[check + 1][start[1]].nil?)
+        moves.push([check + 1, start[1]])
+      elsif (@board[check + 1][start[1]].color != turn_color)
+        moves.push([check + 1, start[1]])
+        break
+      elsif (@board[check + 1][start[1]].color == turn_color)
+        break
+      end
+      check += 1
+    end
+
+    # All moves going left
+    check = start[1]
+    while (check > 0)
+      if (@board[start[0]][check - 1].nil?)
+        moves.push([start[0], check - 1])
+      elsif (@board[start[0]][check - 1].color != turn_color)
+        moves.push([start[0], check - 1])
+        break
+      elsif (@board[start[0]][check - 1].color == turn_color)
+        break
+      end
+      check -= 1
+    end
+
+    # All moves going right
+    check = start[1]
+    while (check < 7)
+      if (@board[start[0]][check + 1].nil?)
+        moves.push([start[0], check + 1])
+      elsif (@board[start[0]][check + 1].color != turn_color)
+        moves.push([start[0], check + 1])
+        break
+      elsif (@board[start[0]][check + 1].color == turn_color)
+        break
+      end
+      check += 1
+    end
+
+    # Use path finding from the bishop
+
+    # All moves going up left diagonal
+    check = [start[0], start[1]]
+    while (check[0] > 0 && check[1] > 0)
+      if (@board[check[0] - 1][check[1] - 1].nil?)
+        moves.push([check[0] - 1, check[1] - 1])
+      elsif (@board[check[0] - 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] - 1])
+        break
+      elsif (@board[check[0] - 1][check[1] - 1].color == turn_color)
+        break
+      end
+      check[0] -= 1
+      check[1] -= 1
+    end
+
+    # All moves going up right diagonal
+    check = [start[0], start[1]]
+    while (check[0] > 0 && check[1] < 7)
+      if (@board[check[0] - 1][check[1] + 1].nil?)
+        moves.push([check[0] - 1, check[1] + 1])
+      elsif (@board[check[0] - 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] + 1])
+        break
+      elsif (@board[check[0] - 1][check[1] + 1].color == turn_color)
+        break
+      end
+      check[0] -= 1
+      check[1] += 1
+    end
+
+    # All moves going down left diagonal
+    check = [start[0], start[1]]
+    while (check[0] < 7 && check[1] > 0)
+      if (@board[check[0] + 1][check[1] - 1].nil?)
+        moves.push([check[0] + 1, check[1] - 1])
+      elsif (@board[check[0] + 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] - 1])
+        break
+      elsif (@board[check[0] + 1][check[1] - 1].color == turn_color)
+        break
+      end
+      check[0] += 1
+      check[1] -= 1
+    end
+
+    # All moves going down right diagonal
+    check = [start[0], start[1]]
+    while (check[0] < 7 && check[1] < 7)
+      if (@board[check[0] + 1][check[1] + 1].nil?)
+        moves.push([check[0] + 1, check[1] + 1])
+      elsif (@board[check[0] + 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] + 1])
+        break
+      elsif (@board[check[0] + 1][check[1] + 1].color == turn_color)
+        break
+      end
+      check[0] += 1
+      check[1] += 1
+    end
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
+  end
+
+  def valid_bishop?(start, finish, turn_color)
+    moves = []
+    check = -5
+
+    # All moves going up left diagonal
+    check = [start[0], start[1]]
+    while (check[0] > 0 && check[1] > 0)
+      if (@board[check[0] - 1][check[1] - 1].nil?)
+        moves.push([check[0] - 1, check[1] - 1])
+      elsif (@board[check[0] - 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] - 1])
+        break
+      elsif (@board[check[0] - 1][check[1] - 1].color == turn_color)
+        break
+      end
+      check[0] -= 1
+      check[1] -= 1
+    end
+
+    # All moves going up right diagonal
+    check = [start[0], start[1]]
+    while (check[0] > 0 && check[1] < 7)
+      if (@board[check[0] - 1][check[1] + 1].nil?)
+        moves.push([check[0] - 1, check[1] + 1])
+      elsif (@board[check[0] - 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] + 1])
+        break
+      elsif (@board[check[0] - 1][check[1] + 1].color == turn_color)
+        break
+      end
+      check[0] -= 1
+      check[1] += 1
+    end
+
+    # All moves going down left diagonal
+    check = [start[0], start[1]]
+    while (check[0] < 7 && check[1] > 0)
+      if (@board[check[0] + 1][check[1] - 1].nil?)
+        moves.push([check[0] + 1, check[1] - 1])
+      elsif (@board[check[0] + 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] - 1])
+        break
+      elsif (@board[check[0] + 1][check[1] - 1].color == turn_color)
+        break
+      end
+      check[0] += 1
+      check[1] -= 1
+    end
+
+    # All moves going down right diagonal
+    check = [start[0], start[1]]
+    while (check[0] < 7 && check[1] < 7)
+      if (@board[check[0] + 1][check[1] + 1].nil?)
+        moves.push([check[0] + 1, check[1] + 1])
+      elsif (@board[check[0] + 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] + 1])
+        break
+      elsif (@board[check[0] + 1][check[1] + 1].color == turn_color)
+        break
+      end
+      check[0] += 1
+      check[1] += 1
+    end
+
+    # Check if the movement is valid from the possible available moves
+    moves.each do |move|
+      return true if move == finish
+    end
+
+    false
   end
 
   def valid_rook?(start, finish, turn_color)
@@ -310,8 +511,6 @@ class Board
   def valid_pawn?(start, finish, turn_color)
     moves = []
 
-    # Case for moving forward
-    # Case for moving diagonally left or right if an opposite piece is there except for a king
     if (turn_color == "white")
       if (start[0] > 0)
         # Moving forward by 1
@@ -391,6 +590,10 @@ class Board
   end
 
   def check?
+    # Reuse the above code, doing the movement of a queen (rook + bishop) and knight from the king start
+    # Identify specific cases (pawn) based off of bishop
+    # If a piece is found that can reach the king and is of opposite color then mark for check
+    # Set the player check value to true
   end
 
   def checkmate?

@@ -336,4 +336,66 @@ describe Board do
 		end
 	end
 
+	describe "#valid_bishop?" do
+		context "given only rooks" do
+			it "returns true moving a white bishop at d4 to a1" do
+				@game_board.create_board
+				@game_board.add_bishops
+				@game_board.move_piece([7, 2], [6, 3], "white")
+				@game_board.move_piece([6, 3], [5, 2], "white")
+				@game_board.move_piece([5, 2], [4, 3], "white")
+				expect(@game_board.valid_bishop?([4, 3], [7, 0], "white")).to eql(true)
+			end
+
+			it "returns true moving a white bishop at g2 to h1" do
+				@game_board.create_board
+				@game_board.add_bishops
+				@game_board.move_piece([7, 5], [6, 6], "white")
+				expect(@game_board.valid_bishop?([6, 6], [7, 7], "white")).to eql(true)
+			end
+
+			it "returns true moving a black bishop at b7 to a8" do
+				@game_board.create_board
+				@game_board.add_bishops
+				@game_board.move_piece([0, 2], [1, 1], "black")
+				expect(@game_board.valid_bishop?([1, 1], [0, 2], "black")).to eql(true)
+			end
+
+			it "returns true moving a black bishop at g7 to h8" do
+				@game_board.create_board
+				@game_board.add_bishops
+				@game_board.move_piece([0, 5], [1, 6], "black")
+				expect(@game_board.valid_bishop?([1, 6], [0, 7], "black")).to eql(true)
+			end
+		end
+
+		describe "#valid_queen?" do
+			context "given only queens" do
+				it "returns true moving the white queen at d1 (start) to be able to capture d8" do
+					@game_board.create_board
+					@game_board.add_queens
+					expect(@game_board.valid_queen?([7, 3], [0, 3], "white"))
+				end
+
+				it "returns true moving the white queen at d1 (start) to a1" do
+					@game_board.create_board
+					@game_board.add_queens
+					expect(@game_board.valid_queen?([7, 3], [7, 0], "white"))
+				end
+
+				it "returns true moving the white queen at d1 (start) to a4" do
+					@game_board.create_board
+					@game_board.add_queens
+					expect(@game_board.valid_queen?([7, 3], [7, 7], "white"))
+				end
+
+				it "returns true moving the white queen at d1 (start) to h5" do
+					@game_board.create_board
+					@game_board.add_queens
+					expect(@game_board.valid_queen?([7, 3], [3, 7], "white"))
+				end
+			end
+		end
+	end
+
 end

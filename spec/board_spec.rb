@@ -368,32 +368,92 @@ describe Board do
 				expect(@game_board.valid_bishop?([1, 6], [0, 7], "black")).to eql(true)
 			end
 		end
+	end
 
-		describe "#valid_queen?" do
-			context "given only queens" do
-				it "returns true moving the white queen at d1 (start) to be able to capture d8" do
-					@game_board.create_board
-					@game_board.add_queens
-					expect(@game_board.valid_queen?([7, 3], [0, 3], "white"))
-				end
+	describe "#valid_queen?" do
+		context "given only queens" do
+			it "returns true moving the white queen at d1 (start) to be able to capture d8" do
+				@game_board.create_board
+				@game_board.add_queens
+				expect(@game_board.valid_queen?([7, 3], [0, 3], "white")).to eql(true)
+			end
 
-				it "returns true moving the white queen at d1 (start) to a1" do
-					@game_board.create_board
-					@game_board.add_queens
-					expect(@game_board.valid_queen?([7, 3], [7, 0], "white"))
-				end
+			it "returns true moving the white queen at d1 (start) to a1" do
+				@game_board.create_board
+				@game_board.add_queens
+				expect(@game_board.valid_queen?([7, 3], [7, 0], "white")).to eql(true)
+			end
 
-				it "returns true moving the white queen at d1 (start) to a4" do
-					@game_board.create_board
-					@game_board.add_queens
-					expect(@game_board.valid_queen?([7, 3], [7, 7], "white"))
-				end
+			it "returns true moving the white queen at d1 (start) to a4" do
+				@game_board.create_board
+				@game_board.add_queens
+				expect(@game_board.valid_queen?([7, 3], [7, 7], "white")).to eql(true)
+			end
 
-				it "returns true moving the white queen at d1 (start) to h5" do
-					@game_board.create_board
-					@game_board.add_queens
-					expect(@game_board.valid_queen?([7, 3], [3, 7], "white"))
-				end
+			it "returns true moving the white queen at d1 (start) to h5" do
+				@game_board.create_board
+				@game_board.add_queens
+				expect(@game_board.valid_queen?([7, 3], [3, 7], "white")).to eql(true)
+			end
+		end
+	end
+	
+	describe "#valid_king?" do
+		context "given only kings" do
+			it "returns true moving the white king at e2 up to e3" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [5, 4], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 up left to d3" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [5, 3], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 up right to f3" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [5, 5], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 down to e1" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [7, 4], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 down left to d1" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [7, 3], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 down right to f1" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [7, 5], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 left to d2" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [6, 3], "white")).to eql(true)
+			end
+
+			it "returns true moving the white king at e2 right to f2" do
+				@game_board.create_board
+				@game_board.add_kings
+				@game_board.move_piece([7, 4], [6, 4], "white")
+				expect(@game_board.valid_king?([6, 4], [6, 5], "white")).to eql(true)
 			end
 		end
 	end

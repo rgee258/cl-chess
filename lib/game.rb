@@ -3,9 +3,9 @@ require "board"
 class Game
 
   def initialize
-  	@game_board = nil
-  	@player_one = nil
-  	@player_two = nil
+    @game_board = nil
+    @player_one = nil
+    @player_two = nil
     @turn_count = 1
     @current_player = nil
     # Increase turn_count every time the game loop starts, but it would need to start at 0
@@ -41,7 +41,7 @@ class Game
   # Will need to loop make move whenever the move is found to be invalid
   # Either add the loop to the play method or the make_move method when you get
   def make_move
-  	move_format = /^[a-hA-H][1-8](?!.)/
+    move_format = /^[a-hA-H][1-8](?!.)/
     move_start = "invalid move"
     move_end = "invalid move"
     start = []
@@ -68,9 +68,13 @@ class Game
     move_start.split("").each {|chr| start.unshift(convert_to_index(chr))}
     move_finish.split("").each {|chr| finish.unshift(convert_to_index(chr))}
 
-  	# add logic for figuring out move and coordinates into board
+    # add logic for figuring out move and coordinates into board
     # will likely need to make this into an if statement based on string return
     @game_board.move_piece(start, finish, @current_player.color)
+    # handling of promotion input
+    unless (@game_board.find_promotion.nil?)
+      @game_board.promote_pawn(find_promotion, promotion_choice)
+    end
   end
 
   def convert_to_index(chr)
@@ -84,6 +88,21 @@ class Game
       coord = position_swaps[chr]
     end
     coord
+  end
+
+  def promotion_choice
+    puts "There is a pawn available for promotion."
+    puts "Which piece type would you like to upgrade to? Select from Q, B, R, and N."
+    piece_format = /^[QBRN](?!.)/
+    piece_choice = "invalid piece"
+    piece_choice = gets.chomp.upcase
+
+    while piece_format.match(piece_choice).nil? do
+      puts "Invalid piece choice input, try again."
+      move_start = gets.chomp.upcase
+    end
+
+    piece_choice
   end
 
   def resign

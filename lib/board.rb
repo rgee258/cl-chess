@@ -122,18 +122,34 @@ class Board
     if (valid_move?(start, finish, turn_color))
       @board[finish[0]][finish[1]] = @board[start[0]][start[1]]
       @board[start[0]][start[1]] = nil
-      "Piece moved."
-    else
-      # Castling movement
-      if (@board[start[0]][start[1]].type == "K" && @board[start[0]][start[1]].move_counter == 0)
-        "Invalid piece movement, try again."
-      end
+      return "Piece moved."
     end
+
+    # Logic for calling the en passant and castling methods
+    if (@board[start[0]][start[1]].type == "P")
+      # En passant call
+    elsif (@board[start[0]][start[1]].type == "K")
+      # Castling call
+    end
+
+    "Invalid piece movement, try again."
   end
 
-  def castling
+  def update_piece(update_position, turn_count)
+    @board[update_position[0]][update_position[1]].last_moved = turn_count
+    @board[update_position[0]][update_position[1]].times_moved += 1
+    "Piece updated."
+  end
+
+  def castling(start, finish, turn_color)
     # Code for castling here
+    if (turn_color == "white")
+    elsif (turn_color == "black")
+    end
     "Castling performed."
+  end
+
+  def en_passant
   end
 
   def valid_move?(start, finish, turn_color)
@@ -386,11 +402,6 @@ class Board
     while (check[0] > 0 && check[1] > 0)
       if (@board[check[0] - 1][check[1] - 1].nil?)
         moves.push([check[0] - 1, check[1] - 1])
-      elsif (@board[check[0] - 1][check[1] - 1].color != turn_color)
-        moves.push([check[0] - 1, check[1] - 1])
-        break
-      elsif (@board[check[0] - 1][check[1] - 1].color == turn_color)
-        break
       end
       check[0] -= 1
       check[1] -= 1
@@ -401,11 +412,6 @@ class Board
     while (check[0] > 0 && check[1] < 7)
       if (@board[check[0] - 1][check[1] + 1].nil?)
         moves.push([check[0] - 1, check[1] + 1])
-      elsif (@board[check[0] - 1][check[1] + 1].color != turn_color)
-        moves.push([check[0] - 1, check[1] + 1])
-        break
-      elsif (@board[check[0] - 1][check[1] + 1].color == turn_color)
-        break
       end
       check[0] -= 1
       check[1] += 1
@@ -416,11 +422,6 @@ class Board
     while (check[0] < 7 && check[1] > 0)
       if (@board[check[0] + 1][check[1] - 1].nil?)
         moves.push([check[0] + 1, check[1] - 1])
-      elsif (@board[check[0] + 1][check[1] - 1].color != turn_color)
-        moves.push([check[0] + 1, check[1] - 1])
-        break
-      elsif (@board[check[0] + 1][check[1] - 1].color == turn_color)
-        break
       end
       check[0] += 1
       check[1] -= 1
@@ -431,11 +432,6 @@ class Board
     while (check[0] < 7 && check[1] < 7)
       if (@board[check[0] + 1][check[1] + 1].nil?)
         moves.push([check[0] + 1, check[1] + 1])
-      elsif (@board[check[0] + 1][check[1] + 1].color != turn_color)
-        moves.push([check[0] + 1, check[1] + 1])
-        break
-      elsif (@board[check[0] + 1][check[1] + 1].color == turn_color)
-        break
       end
       check[0] += 1
       check[1] += 1
@@ -611,7 +607,7 @@ class Board
         end
 
         # Moving forward by 2 if the pawn hasn't moved
-        if (@board[start[0]][start[1]].move_counter == 0)
+        if (@board[start[0]][start[1]].last_moved == 0)
           if (@board[start[0] - 2][start[1]].nil?)
             moves.push([start[0] - 2, start[1]])
           end
@@ -643,7 +639,7 @@ class Board
         end
 
         # Moving forward by 2 if the pawn hasn't moved
-        if (@board[start[0]][start[1]].move_counter == 0)
+        if (@board[start[0]][start[1]].last_moved == 0)
           if (@board[start[0] + 2][start[1]].nil?)
             moves.push([start[0] + 2, start[1]])
           end
@@ -692,11 +688,415 @@ class Board
     @board[position[0]][position[1]].type = piece
   end
 
-  def check?
+  def find_king(turn_color)
+    8.times do |row|
+      8.times do |col|
+        unless (@board[row][col].nil?)
+          return [row, col] if (@board[row][col].type == "K" && @board[row][col].color == turn_color)
+        end
+      end  
+    end
+    "ERROR: King not found."
+  end
+
+  def check?(king_position, turn_color)
     # Reuse the above code, doing the movement of a queen (rook + bishop) and knight from the king start
     # Identify specific cases (pawn) based off of bishop
     # If a piece is found that can reach the king and is of opposite color then mark for check
     # Set the player check value to true
+
+    # White king
+    if (turn_color == "white")
+      # Check for pawns
+      unless (@board[king_position[0] - 1][king_position[1] - 1].nil?)
+        # Left pawn
+        if (@board[king_position[0] - 1][king_position[1] - 1].type == "P" && @board[king_position[0] - 1][king_position[1] - 1].color == "black")
+          return true
+        end
+      end
+      unless (@board[king_position[0] - 1][king_position[1] + 1].nil?)
+        # Right pawn
+        if (@board[king_position[0] - 1][king_position[1] + 1].type == "P" && @board[king_position[0] - 1][king_position[1] + 1].color == "black")
+          return true
+        end
+      end
+
+      # Check for knights
+      # Knight located up 2, left 1
+      if (king_position[0] > 1 && king_position[1] > 0)
+        unless (@board[king_position[0] - 2][king_position[1] - 1].nil?)
+          if (@board[king_position[0] - 2][king_position[1] - 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located up 2, right 1
+      if (king_position[0] > 1 && king_position[1] < 7)
+        unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located left 2, up 1
+      if (king_position[0] > 0 && king_position[1] > 1)
+        unless (@board[king_position[0] - 1][king_position[1] - 2].nil?)
+          if (@board[king_position[0] - 1][king_position[1] - 2].type == "N" && @board[king_position[0] - 1][king_position[1] - 2].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located left 2, down 1
+      if (king_position[0] < 7 && king_position[1] > 1)
+        unless (@board[king_position[0] + 1][king_position[1] - 2].nil?)
+          if (@board[king_position[0] + 1][king_position[1] - 2].type == "N" && @board[king_position[0] + 1][king_position[1] - 2].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located right 2, up 1
+      if (king_position[0] > 0 && king_position[1] < 6)
+        unless (@board[king_position[0] - 1][king_position[1] + 2].nil?)
+          if (@board[king_position[0] - 1][king_position[1] + 2].type == "N" && @board[king_position[0] - 1][king_position[1] + 2].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located right 2, down 1
+      if (king_position[0] < 7 && king_position[1] < 6)
+        unless (@board[king_position[0] + 1][king_position[1] + 2].nil?)
+          if (@board[king_position[0] + 1][king_position[1] + 2].type == "N" && @board[king_position[0] + 1][king_position[1] + 2].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located down 2, left 1
+      if (king_position[0] < 6 && king_position[1] > 0)
+        unless (@board[king_position[0] + 2][king_position[1] - 1].nil?)
+          if (@board[king_position[0] + 2][king_position[1] - 1].type == "N" && @board[king_position[0] + 2][king_position[1] - 1].color == "black")
+            return true
+          end
+        end
+      end
+      # Knight located down 2, right 1
+      if (king_position[0] < 6 && king_position[1] < 7)
+        unless (@board[king_position[0] + 2][king_position[1] + 1].nil?)
+          if (@board[king_position[0] + 2][king_position[1] + 1].type == "N" && @board[king_position[0] + 2][king_position[1] + 1].color == "black")
+            return true
+          end
+        end
+      end
+
+      # Check for rooks and queens
+      check = 0
+      # All moves going up
+      check = king_position[0]
+      while (check > 0)
+        until (@board[check - 1][king_position[1]].nil?)
+          if (@board[check - 1][king_position[1]].type == "R" && @board[check - 1][king_position[1]].color == "black")
+            return true
+          elsif (@board[check - 1][king_position[1]].type == "Q" && @board[check - 1][king_position[1]].color == "black")
+            return true
+          end
+          break
+        end
+        check -= 1
+      end
+      # All moves going down
+      check = king_position[0]
+      while (check < 7)
+        until (@board[check + 1][king_position[1]].nil?)
+          if (@board[check + 1][king_position[1]].type == "R" && @board[check + 1][king_position[1]].color == "black")
+            return true
+          elsif (@board[check + 1][king_position[1]].type == "Q" && @board[check + 1][king_position[1]].color == "black")
+            return true
+          end
+          break
+        end
+        check += 1
+      end
+      # All moves going left
+      check = king_position[1]
+      while (check > 0)
+        until (@board[king_position[0]][check - 1].nil?)
+          if (@board[king_position[0]][check - 1].type == "R" && @board[king_position[0]][check - 1].color == "black")
+            return true
+          elsif (@board[king_position[0]][check - 1].type == "Q" && @board[king_position[0]][check - 1].color == "black")
+            return true
+          end
+          break
+        end
+        check -= 1
+      end
+      # All moves going right
+      check = king_position[1]
+      while (check < 7)
+        until (@board[king_position[0]][check + 1].nil?)
+          if (@board[king_position[0]][check + 1].type == "R" && @board[king_position[0]][check + 1].color == "black")
+            return true
+          elsif (@board[king_position[0]][check + 1].type == "Q" && @board[king_position[0]][check + 1].color == "black")
+            return true
+          end
+          break
+        end
+        check += 1
+      end
+
+      # Check for bishops and queens
+      # All moves going up left diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] > 0 && check[1] > 0)
+        until (@board[check[0] - 1][check[1] - 1].nil?)
+          if (@board[check[0] - 1][check[1] - 1].type == "B" && @board[check[0] - 1][check[1] - 1].color == "black")
+            return true
+          elsif (@board[check[0] - 1][check[1] - 1].type == "Q" && @board[check[0] - 1][check[1] - 1].color == "black")
+            return true
+          end
+          break
+        end
+        check[0] -= 1
+        check[1] -= 1
+      end
+      # All moves going up right diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] > 0 && check[1] < 7)
+        until (@board[check[0] - 1][check[1] + 1].nil?)
+          if (@board[check[0] - 1][check[1] + 1].type == "B" && @board[check[0] - 1][check[1] + 1].color == "black")
+            return true
+          elsif (@board[check[0] - 1][check[1] + 1].type == "Q" && @board[check[0] - 1][check[1] + 1].color == "black")
+            return true
+          end
+          break
+        end
+        check[0] -= 1
+        check[1] += 1
+      end
+      # All moves going down left diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] < 7 && check[1] > 0)
+        until (@board[check[0] + 1][check[1] - 1].nil?)
+          if (@board[check[0] + 1][check[1] - 1].type == "B" && @board[check[0] + 1][check[1] - 1].color == "black")
+            return true
+          elsif (@board[check[0] + 1][check[1] - 1].type == "Q" && @board[check[0] + 1][check[1] - 1].color == "black")
+            return true
+          end
+          break
+        end
+        check[0] += 1
+        check[1] -= 1
+      end
+      # All moves going down right diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] < 7 && check[1] < 7)
+        until (@board[check[0] + 1][check[1] + 1].nil?)
+          if (@board[check[0] + 1][check[1] + 1].type == "B" && @board[check[0] + 1][check[1] + 1].color == "black")
+            return true
+          elsif (@board[check[0] + 1][check[1] + 1].type == "Q" && @board[check[0] + 1][check[1] + 1].color == "black")
+            return true
+          end
+          break
+        end
+        check[0] += 1
+        check[1] += 1
+      end
+
+    # Black king
+    elsif (turn_color == "black")
+      # Check for pawns
+      unless (@board[king_position[0] + 1][king_position[1] - 1].nil?)
+        # Left pawn
+        if (@board[king_position[0] + 1][king_position[1] - 1].type == "P" && @board[king_position[0] + 1][king_position[1] - 1].color == "white")
+          return true
+        end
+      end
+      # Right pawn
+      unless (@board[king_position[0] + 1][king_position[1] + 1].nil?)
+        if (@board[king_position[0] + 1][king_position[1] + 1].type == "P" && @board[king_position[0] + 1][king_position[1] + 1].color == "white")
+          return true
+        end
+      end
+
+      # Check for knights
+      # Knight located up 2, left 1
+      if (king_position[0] > 1 && king_position[1] > 0)
+        unless (@board[king_position[0] - 2][king_position[1] - 1].nil?)
+          if (@board[king_position[0] - 2][king_position[1] - 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located up 2, right 1
+      if (king_position[0] > 1 && king_position[1] < 7)
+        unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located left 2, up 1
+      if (king_position[0] > 0 && king_position[1] > 1)
+        unless (@board[king_position[0] - 1][king_position[1] - 2].nil?)
+          if (@board[king_position[0] - 1][king_position[1] - 2].type == "N" && @board[king_position[0] - 1][king_position[1] - 2].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located left 2, down 1
+      if (king_position[0] < 7 && king_position[1] > 1)
+        unless (@board[king_position[0] + 1][king_position[1] - 2].nil?)
+          if (@board[king_position[0] + 1][king_position[1] - 2].type == "N" && @board[king_position[0] + 1][king_position[1] - 2].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located right 2, up 1
+      if (king_position[0] > 0 && king_position[1] < 6)
+        unless (@board[king_position[0] - 1][king_position[1] + 2].nil?)
+          if (@board[king_position[0] - 1][king_position[1] + 2].type == "N" && @board[king_position[0] - 1][king_position[1] + 2].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located right 2, down 1
+      if (king_position[0] < 7 && king_position[1] < 6)
+        unless (@board[king_position[0] + 1][king_position[1] + 2].nil?)
+          if (@board[king_position[0] + 1][king_position[1] + 2].type == "N" && @board[king_position[0] + 1][king_position[1] + 2].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located down 2, left 1
+      if (king_position[0] < 6 && king_position[1] > 0)
+        unless (@board[king_position[0] + 2][king_position[1] - 1].nil?)
+          if (@board[king_position[0] + 2][king_position[1] - 1].type == "N" && @board[king_position[0] + 2][king_position[1] - 1].color == "white")
+            return true
+          end
+        end
+      end
+      # Knight located down 2, right 1
+      if (king_position[0] < 6 && king_position[1] < 7)
+        unless (@board[king_position[0] + 2][king_position[1] + 1].nil?)
+          if (@board[king_position[0] + 2][king_position[1] + 1].type == "N" && @board[king_position[0] + 2][king_position[1] + 1].color == "white")
+            return true
+          end
+        end
+      end
+
+      # Check for rooks and queens
+      check = 0
+      # All moves going up
+      check = king_position[0]
+      while (check > 0)
+        until (@board[check - 1][king_position[1]].nil?)
+          if (@board[check - 1][king_position[1]].type == "R" && @board[check - 1][king_position[1]].color == "white")
+            return true
+          elsif (@board[check - 1][king_position[1]].type == "Q" && @board[check - 1][king_position[1]].color == "white")
+            return true
+          end
+          break
+        end
+        check -= 1
+      end
+      # All moves going down
+      check = king_position[0]
+      while (check < 7)
+        until (@board[check + 1][king_position[1]].nil?)
+          if (@board[check + 1][king_position[1]].type == "R" && @board[check + 1][king_position[1]].color == "white")
+            return true
+          elsif (@board[check + 1][king_position[1]].type == "Q" && @board[check + 1][king_position[1]].color == "white")
+            return true
+          end
+          break
+        end
+        check += 1
+      end
+      # All moves going left
+      check = king_position[1]
+      while (check > 0)
+        until (@board[king_position[0]][check - 1].nil?)
+          if (@board[king_position[0]][check - 1].type == "R" && @board[king_position[0]][check - 1].color == "white")
+            return true
+          elsif (@board[king_position[0]][check - 1].type == "Q" && @board[king_position[0]][check - 1].color == "white")
+            return true
+          end
+          break
+        end
+        check -= 1
+      end
+      # All moves going right
+      check = king_position[1]
+      while (check < 7)
+        until (@board[king_position[0]][check + 1].nil?)
+          if (@board[king_position[0]][check + 1].type == "R" && @board[king_position[0]][check + 1].color == "white")
+            return true
+          elsif (@board[king_position[0]][check + 1].type == "Q" && @board[king_position[0]][check + 1].color == "white")
+            return true
+          end
+          break
+        end
+        check += 1
+      end
+
+      # Check for bishops and queens
+      # All moves going up left diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] > 0 && check[1] > 0)
+        until (@board[check[0] - 1][check[1] - 1].nil?)
+          if (@board[check[0] - 1][check[1] - 1].type == "B" && @board[check[0] - 1][check[1] - 1].color == "white")
+            return true
+          elsif (@board[check[0] - 1][check[1] - 1].type == "Q" && @board[check[0] - 1][check[1] - 1].color == "white")
+            return true
+          end
+          break
+        end
+        check[0] -= 1
+        check[1] -= 1
+      end
+      # All moves going up right diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] > 0 && check[1] < 7)
+        until (@board[check[0] - 1][check[1] + 1].nil?)
+          if (@board[check[0] - 1][check[1] + 1].type == "B" && @board[check[0] - 1][check[1] + 1].color == "white")
+            return true
+          elsif (@board[check[0] - 1][check[1] + 1].type == "Q" && @board[check[0] - 1][check[1] + 1].color == "white")
+            return true
+          end
+          break
+        end
+        check[0] -= 1
+        check[1] += 1
+      end
+      # All moves going down left diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] < 7 && check[1] > 0)
+        until (@board[check[0] + 1][check[1] - 1].nil?)
+          if (@board[check[0] + 1][check[1] - 1].type == "B" && @board[check[0] + 1][check[1] - 1].color == "white")
+            return true
+          elsif (@board[check[0] + 1][check[1] - 1].type == "Q" && @board[check[0] + 1][check[1] - 1].color == "white")
+            return true
+          end
+          break
+        end
+        check[0] += 1
+        check[1] -= 1
+      end
+      # All moves going down right diagonal
+      check = [king_position[0], king_position[1]]
+      while (check[0] < 7 && check[1] < 7)
+        until (@board[check[0] + 1][check[1] + 1].nil?)
+          if (@board[check[0] + 1][check[1] + 1].type == "B" && @board[check[0] + 1][check[1] + 1].color == "white")
+            return true
+          elsif (@board[check[0] + 1][check[1] + 1].type == "Q" && @board[check[0] + 1][check[1] + 1].color == "white")
+            return true
+          end
+          break
+        end
+        check[0] += 1
+        check[1] += 1
+      end
+    end
+
+    false
   end
 
   def checkmate?

@@ -22,10 +22,18 @@ describe Piece do
     end
   end
 
-  describe "#move_counter" do
+  describe "#last_moved" do
     context "given a new piece that is a white pawn" do
-      it "returns 0 for the move counter" do
-        expect(@piece.move_counter).to eql(0)
+      it "returns 0 for the turn the piece was last moved" do
+        expect(@piece.last_moved).to eql(0)
+      end
+    end
+  end
+
+  describe "#times_moved" do
+    context "given a new piece that is a white pawn" do
+      it "returns 0 for the amount of times the piece was moved" do
+        expect(@piece.times_moved).to eql(0)
       end
     end
   end

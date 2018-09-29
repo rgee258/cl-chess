@@ -458,6 +458,16 @@ describe Board do
     end
   end
 
+  describe "#update_piece" do
+    context "given a starting board" do
+      it "returns 'Piece updated.' when updating the left most white pawn" do
+      @game_board.create_board
+      @game_board.add_pieces
+      expect(@game_board.update_piece([6, 0], 1)).to eql("Piece updated.")
+      end
+    end
+  end
+
   describe "#find_promotion" do
     context "given a white pawn at h8" do
       it "returns an array with the coordinates of the white pawn" do
@@ -525,6 +535,106 @@ describe Board do
         @game_board.move_piece([2, 6], [1, 7], "white")
         @game_board.move_piece([1, 7], [0, 7], "white")
         expect(@game_board.promote_pawn([0,7],"N")).to eql("N")
+      end
+    end
+  end
+
+  describe "#find_king" do
+    context "given a starting board" do
+      it "returns the coords for e8 where the white king is" do
+        @game_board.create_board
+        @game_board.add_pieces
+        expect(@game_board.find_king("white")).to eql([7, 4])
+      end
+
+      it "returns the coords for e1 where the black king is" do
+        @game_board.create_board
+        @game_board.add_pieces
+        expect(@game_board.find_king("black")).to eql([0, 4])
+      end
+    end
+  end
+
+  describe "#check?" do
+    context "given a starting board" do
+      it "returns false where the white king is" do
+        @game_board.create_board
+        @game_board.add_pieces
+        expect(@game_board.check?([7, 4], "white")).to eql(false)
+      end
+    end
+
+    context "given all pieces except pawns" do
+      it "returns true when a black rook is threatening the white king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_knights
+        @game_board.add_rooks
+        @game_board.add_bishops
+        @game_board.add_queens
+        @game_board.move_piece([0, 7], [1, 7], "black")
+        @game_board.move_piece([1, 7], [1, 4], "black")
+        expect(@game_board.check?([7, 4], "white")).to eql(true)
+      end
+
+      it "returns true when a black queen is threatening the white king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_knights
+        @game_board.add_rooks
+        @game_board.add_bishops
+        @game_board.add_queens
+        @game_board.move_piece([0, 3], [1, 4], "black")
+        expect(@game_board.check?([7, 4], "white")).to eql(true)
+      end
+
+      it "returns true when a white bishop is threatening the black king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_knights
+        @game_board.add_rooks
+        @game_board.add_bishops
+        @game_board.add_queens
+        @game_board.move_piece([0, 4], [1, 4], "black")
+        @game_board.move_piece([7, 2], [5, 0], "white")
+        expect(@game_board.check?([1, 4], "black")).to eql(true)
+      end
+
+      it "returns true when a white knight is threatening the black king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_knights
+        @game_board.add_rooks
+        @game_board.add_bishops
+        @game_board.add_queens
+        @game_board.move_piece([0, 4], [1, 5], "black")
+        @game_board.move_piece([7, 6], [5, 5], "white")
+        @game_board.move_piece([5, 5], [3, 4], "white")
+        expect(@game_board.check?([1, 5], "black")).to eql(true)
+      end
+    end
+
+    context "given only pawns and kings" do
+      it "returns true when a white pawn is threatening the black king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_pawns
+        @game_board.move_piece([6, 6], [4, 6], "white")
+        @game_board.move_piece([4, 6], [3, 6], "white")
+        @game_board.move_piece([3, 6], [2, 6], "white")
+        @game_board.move_piece([2, 6], [1, 5], "white")
+        expect(@game_board.check?([0, 4], "black")).to eql(true)
+      end
+
+      it "returns true when a black pawn is threatening the white king" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_pawns
+        @game_board.move_piece([1, 6], [3, 6], "black")
+        @game_board.move_piece([3, 6], [4, 6], "black")
+        @game_board.move_piece([4, 6], [5, 6], "black")
+        @game_board.move_piece([5, 6], [6, 5], "black")
+        expect(@game_board.check?([7, 4], "white")).to eql(true)
       end
     end
   end

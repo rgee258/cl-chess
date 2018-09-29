@@ -22,4 +22,20 @@ describe Player do
     end
   end
 
+  describe "#check" do
+    context "given a new player" do
+      it "returns false as the game has just started and check is not possible" do
+        expect(@player.check).to eql(false)
+      end
+    end
+  end
+
+  describe "#castling" do
+    context "given a new player" do
+      it "returns false as the game has just started and castling is not possible" do
+        expect(@player.castling_used).to eql(false)
+      end
+    end
+  end
+
 end

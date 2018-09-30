@@ -97,7 +97,7 @@ class Board
     display
   end
 
-  def move_piece(start, finish, turn_color)
+  def move_piece(start, finish, turn_color, castling_used, in_check)
 
     # HOW do we keep track of which side's piece can move for the current turn?
     # Perhaps pass in the current color and do it that way for the starting piece?
@@ -135,21 +135,108 @@ class Board
     "Invalid piece movement, try again."
   end
 
+  # Going to need something for moving a piece when the player is in check
+
   def update_piece(update_position, turn_count)
     @board[update_position[0]][update_position[1]].last_moved = turn_count
     @board[update_position[0]][update_position[1]].times_moved += 1
     "Piece updated."
   end
 
-  def castling(start, finish, turn_color)
+  def castling(king_start, king_finish, turn_color, castling_used)
     # Code for castling here
-    if (turn_color == "white")
-    elsif (turn_color == "black")
+    if (castling_used == false)
+      if (turn_color == "white")
+        # Right rook
+        if (king_start == [7, 4] && king_finish == [7, 6] && @board[king_start[0]][king_start[1]].last_moved == 0)
+          # Check if both spots to the right are empty
+          if (@board[7][5].nil? && @board[7][6].nil?)
+            unless (@board[7][7].nil?)
+              # Check rook requirements
+              if (@board[7][7].type == "R" && @board[7][7].last_moved == 0)
+                # Use unless to ensure the king positions being moved do not result in check
+                unless (check?([7, 5], "white"))
+                  unless (check?([7, 6], "white"))
+                    @board[7][6] = @board[7][4]
+                    @board[7][4] = nil
+                    @board[7][5] = @board[7][7]
+                    @board[7][7] = nil
+                    return "Castling performed."
+                  end
+                end
+              end
+            end
+          end
+        # Left rook
+        elsif (king_start == [7, 4] && king_finish == [7, 2] && @board[king_start[0]][king_start[1]].last_moved == 0)  
+          # Check if both spots to the left are empty
+          if (@board[7][3].nil? && @board[7][2].nil?)
+            unless (@board[7][0].nil?)
+              # Check rook requirements
+              if (@board[7][0].type == "R" && @board[7][0].last_moved == 0)
+                # Use unless to ensure the king positions being moved do not result in check
+                unless (check?([7, 3], "white"))
+                  unless (check?([7, 2], "white"))
+                    @board[7][2] = @board[7][4]
+                    @board[7][4] = nil
+                    @board[7][3] = @board[7][0]
+                    @board[7][0] = nil
+                    return "Castling performed."
+                  end
+                end
+              end
+            end
+          end
+        end
+      elsif (turn_color == "black")
+        # Right rook
+        if (king_start == [0, 4] && king_finish == [0, 6] && @board[king_start[0]][king_start[1]].last_moved == 0)
+          # Check if both spots to the right are empty
+          if (@board[0][5].nil? && @board[0][6].nil?)
+            unless (@board[0][7].nil?)
+              # Check rook requirements
+              if (@board[0][7].type == "R" && @board[0][7].last_moved == 0)
+                # Use unless to ensure the king positions being moved do not result in check
+                unless (check?([0, 5], "black"))
+                  unless (check?([0, 6], "black"))
+                    @board[0][6] = @board[0][4]
+                    @board[0][4] = nil
+                    @board[0][5] = @board[0][7]
+                    @board[0][7] = nil
+                    return "Castling performed."
+                  end
+                end
+              end
+            end
+          end
+        # Left rook
+        elsif (king_start == [0, 4] && king_finish == [0, 2] && @board[king_start[0]][king_start[1]].last_moved == 0)  
+          # Check if both spots to the left are empty
+          if (@board[0][3].nil? && @board[0][2].nil?)
+            unless (@board[0][0].nil?)
+              # Check rook requirements
+              if (@board[0][0].type == "R" && @board[0][0].last_moved == 0)
+                # Use unless to ensure the king positions being moved do not result in check
+                unless (check?([0, 3], "black"))
+                  unless (check?([0, 2], "black"))
+                    @board[0][2] = @board[7][4]
+                    @board[0][4] = nil
+                    @board[0][3] = @board[7][0]
+                    @board[0][0] = nil
+                    return "Castling performed."
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
     end
-    "Castling performed."
+    "Invalid piece movement, try again."
   end
 
-  def en_passant
+  def en_passant?(start, finish, turn_color)
+    "Invalid piece movement, try again."
   end
 
   def valid_move?(start, finish, turn_color)
@@ -160,6 +247,7 @@ class Board
     # Call validity checks based on piece type
     if (piece_type == "K")
       return valid_king?(start, finish, turn_color)
+      # Put these in an if, make a separate method for handling king moves in check
     elsif (piece_type == "Q")
       return valid_queen?(start, finish, turn_color)
     elsif (piece_type == "B")

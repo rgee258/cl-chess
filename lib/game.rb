@@ -70,7 +70,7 @@ class Game
 
     # add logic for figuring out move and coordinates into board
     # will likely need to make this into an if statement based on string return
-    @game_board.move_piece(start, finish, @current_player.color)
+    @game_board.move_piece(start, finish, @current_player.color, @current_player.castling_used, @current_player.check)
     @game_board.update_piece(finish, turn_count)
     # handling of promotion input
     unless (@game_board.find_promotion.nil?)

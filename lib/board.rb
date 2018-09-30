@@ -97,7 +97,7 @@ class Board
     display
   end
 
-  def move_piece(start, finish, turn_color, castling_used, in_check)
+  def move_piece(start, finish, turn_color, turn_count, castling_used, in_check)
 
     # HOW do we keep track of which side's piece can move for the current turn?
     # Perhaps pass in the current color and do it that way for the starting piece?
@@ -235,7 +235,67 @@ class Board
     "Invalid piece movement, try again."
   end
 
-  def en_passant?(start, finish, turn_color)
+  def en_passant(start, finish, turn_color, turn_count)
+    if (turn_color == "white")
+      if (start[0] == 3)
+        # Adjacent left
+        unless(@board[3][start[1] - 1].nil?)
+          if (@board[3][start[1] - 1].type == "P")
+            if (finish[0] == 2 && finish[1] == start[1] - 1)
+              if (@board[3][start[1] - 1].last_moved == turn_count - 1 && @board[3][start[1] - 1].times_moved == 1)
+                @board[2][finish[1]] = @board[start[0]][start[1]]
+                @board[start[0]][start[1]] = nil
+                @board[3][start[1] - 1] = nil
+                return "En passant performed."
+              end
+            end
+          end
+        end
+        # Adjacent right
+        unless(@board[3][start[1] + 1].nil?)
+          if (@board[3][start[1] + 1].type == "P")
+            if (finish[0] == 2 && finish[1] == start[1] + 1)
+              if (@board[3][start[1] + 1].last_moved == turn_count - 1 && @board[3][start[1] + 1].times_moved == 1)
+                @board[2][finish[1]] = @board[start[0]][start[1]]
+                @board[start[0]][start[1]] = nil
+                @board[3][start[1] + 1] = nil
+                return "En passant performed."
+              end
+            end
+          end
+        end
+      end
+    elsif (turn_color == "black")
+      if (start[0] == 4)
+        # Adjacent left
+        unless(@board[4][start[1] - 1].nil?)
+          if (@board[4][start[1] - 1].type == "P")
+            if (finish[0] == 5 && finish[1] == start[1] - 1)
+              if (@board[4][start[1] - 1].last_moved == turn_count - 1 && @board[4][start[1] - 1].times_moved == 1)
+                @board[5][finish[1]] = @board[start[0]][start[1]]
+                @board[start[0]][start[1]] = nil
+                @board[4][start[1] - 1] = nil
+                return "En passant performed."
+              end
+            end
+          end
+        end
+        # Adjacent right
+        unless(@board[4][start[1] + 1].nil?)
+          if (@board[4][start[1] + 1].type == "P")
+            if (finish[0] == 5 && finish[1] == start[1] + 1)
+              if (@board[4][start[1] + 1].last_moved == turn_count - 1 && @board[4][start[1] + 1].times_moved == 1)
+                @board[5][finish[1]] = @board[start[0]][start[1]]
+                @board[start[0]][start[1]] = nil
+                @board[4][start[1] + 1] = nil
+                return "En passant performed."
+              end
+            end
+          end
+        end
+      end
+    end
+
     "Invalid piece movement, try again."
   end
 

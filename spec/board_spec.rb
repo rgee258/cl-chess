@@ -874,7 +874,7 @@ describe Board do
     end
 
     context "given only pawns, queens, and kings" do
-      it "returns 'En passant performed, you are no longer in check.' after the white king is in check" do
+      it "returns 'Invalid piece movement, you are still in check.' trying to perform en passant while the king is still in check after" do
         @game_board.create_board
         @game_board.add_pawns
         @game_board.add_kings
@@ -906,6 +906,81 @@ describe Board do
         @game_board.move_piece([1, 2], [3, 2], "black", 13, false, false)
         @game_board.update_piece([3, 2], 13)
         expect(@game_board.move_piece([3, 1], [2, 2], "white", 14, false, true)).to eql("Invalid piece movement, you are still in check.")
+      end
+    end
+  end
+
+  describe "#find_attackers" do
+    context "given only pawns, queens, and kings" do
+      it "returns the pieces that currently threaten the king" do
+        @game_board.create_board
+        @game_board.add_pawns
+        @game_board.add_kings
+        @game_board.add_queens
+        @game_board.move_piece([6, 1], [4, 1], "white", 1, false, false)
+        @game_board.update_piece([4, 1], 1)
+        @game_board.move_piece([4, 1], [3, 1], "white", 2, false, false)
+        @game_board.update_piece([3, 1], 2)
+        @game_board.move_piece([6, 4], [5, 4], "white", 3, false, false)
+        @game_board.update_piece([5, 4], 3)
+        @game_board.move_piece([5, 4], [4, 4], "white", 4, false, false)
+        @game_board.update_piece([4, 4], 4)
+        @game_board.move_piece([4, 4], [3, 4], "white", 5, false, false)
+        @game_board.update_piece([3, 4], 5)
+        @game_board.move_piece([7, 4], [6, 4], "white", 6, false, false)
+        @game_board.update_piece([6, 4], 6)
+        @game_board.move_piece([6, 4], [5, 4], "white", 7, false, false)
+        @game_board.update_piece([5, 4], 7)
+        @game_board.move_piece([5, 4], [4, 4], "white", 8, false, false)
+        @game_board.update_piece([4, 4], 8)
+        @game_board.move_piece([4, 4], [4, 3], "white", 9, false, false)
+        @game_board.update_piece([4, 3], 9)
+        @game_board.move_piece([1, 3], [2, 3], "black", 10, false, false)
+        @game_board.update_piece([2, 3], 10)
+        @game_board.move_piece([3, 4], [2, 3], "white", 11, false, false)
+        @game_board.update_piece([2, 3], 11)
+        @game_board.move_piece([0, 3], [2, 3], "black", 12, false, false)
+        @game_board.update_piece([2, 3], 12)
+        @game_board.move_piece([1, 2], [3, 2], "black", 13, false, false)
+        @game_board.update_piece([3, 2], 13)
+        expect(@game_board.find_attackers(@game_board.find_king("white"), "white")).to eql([[3, 2], [2, 3]])
+      end
+    end
+  end
+
+  describe "#possible_blocks" do
+    context "given only pawns, queens, and kings" do
+      it "returns the spaces of the queen leading to the king" do
+        @game_board.create_board
+        @game_board.add_pawns
+        @game_board.add_kings
+        @game_board.add_queens
+        @game_board.move_piece([6, 1], [4, 1], "white", 1, false, false)
+        @game_board.update_piece([4, 1], 1)
+        @game_board.move_piece([4, 1], [3, 1], "white", 2, false, false)
+        @game_board.update_piece([3, 1], 2)
+        @game_board.move_piece([6, 4], [5, 4], "white", 3, false, false)
+        @game_board.update_piece([5, 4], 3)
+        @game_board.move_piece([5, 4], [4, 4], "white", 4, false, false)
+        @game_board.update_piece([4, 4], 4)
+        @game_board.move_piece([4, 4], [3, 4], "white", 5, false, false)
+        @game_board.update_piece([3, 4], 5)
+        @game_board.move_piece([7, 4], [6, 4], "white", 6, false, false)
+        @game_board.update_piece([6, 4], 6)
+        @game_board.move_piece([6, 4], [5, 4], "white", 7, false, false)
+        @game_board.update_piece([5, 4], 7)
+        @game_board.move_piece([5, 4], [5, 3], "white", 8, false, false)
+        @game_board.update_piece([5, 3], 8)
+        @game_board.move_piece([1, 3], [2, 3], "black", 9, false, false)
+        @game_board.update_piece([2, 3], 9)
+        @game_board.move_piece([3, 4], [2, 3], "white", 10, false, false)
+        @game_board.update_piece([2, 3], 10)
+        @game_board.move_piece([0, 3], [2, 3], "black", 11, false, false)
+        @game_board.update_piece([2, 3], 11)
+        @game_board.move_piece([1, 2], [3, 2], "black", 12, false, false)
+        @game_board.update_piece([3, 2], 12)
+        puts @game_board.display_board
+        expect(@game_board.possible_blocks(@game_board.find_king("white"), "white")).to eql([[3, 3], [4, 3]])
       end
     end
   end

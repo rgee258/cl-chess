@@ -469,24 +469,29 @@ class Board
 
     # Check here for removing moves that place you in check
     moves_causing_check = []
+
     moves.each do |move|
       if (check?(move, turn_color))
         moves_causing_check.push(move)
       end
     end
+
     moves_causing_check.each do |remove|
       moves.delete(remove)
     end
 
-=begin
-    # Check if the movement is valid from the possible available moves
-    moves.each do |move|
-      return true if move == finish
+    # Check here for moves overlapping with the enemy king
+
+    enemy_color = "black" if turn_color == "white"
+    enemy_color = "white" if turn_color == "black"
+
+    enemy_king_moves = all_king_moves(enemy_color)
+
+    enemy_king_moves.each do |enemy_king_move|
+      moves.delete(enemy_king_move)
     end
 
-    false
-=end
-    return moves
+    moves
   end
 
   def valid_queen(start, turn_color)
@@ -625,6 +630,11 @@ class Board
     while (check[0] > 0 && check[1] > 0)
       if (@board[check[0] - 1][check[1] - 1].nil?)
         moves.push([check[0] - 1, check[1] - 1])
+      elsif (@board[check[0] - 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] - 1])
+        break
+      elsif (@board[check[0] - 1][check[1] - 1].color == turn_color)
+        break
       end
       check[0] -= 1
       check[1] -= 1
@@ -635,6 +645,11 @@ class Board
     while (check[0] > 0 && check[1] < 7)
       if (@board[check[0] - 1][check[1] + 1].nil?)
         moves.push([check[0] - 1, check[1] + 1])
+      elsif (@board[check[0] - 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] - 1, check[1] + 1])
+        break
+      elsif (@board[check[0] - 1][check[1] + 1].color == turn_color)
+        break
       end
       check[0] -= 1
       check[1] += 1
@@ -645,6 +660,11 @@ class Board
     while (check[0] < 7 && check[1] > 0)
       if (@board[check[0] + 1][check[1] - 1].nil?)
         moves.push([check[0] + 1, check[1] - 1])
+      elsif (@board[check[0] + 1][check[1] - 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] - 1])
+        break
+      elsif (@board[check[0] + 1][check[1] - 1].color == turn_color)
+        break
       end
       check[0] += 1
       check[1] -= 1
@@ -655,6 +675,11 @@ class Board
     while (check[0] < 7 && check[1] < 7)
       if (@board[check[0] + 1][check[1] + 1].nil?)
         moves.push([check[0] + 1, check[1] + 1])
+      elsif (@board[check[0] + 1][check[1] + 1].color != turn_color)
+        moves.push([check[0] + 1, check[1] + 1])
+        break
+      elsif (@board[check[0] + 1][check[1] + 1].color == turn_color)
+        break
       end
       check[0] += 1
       check[1] += 1
@@ -910,6 +935,8 @@ class Board
 
     # White king
     if (turn_color == "white")
+      # How exactly do we check for enemy kings
+
       # Check for pawns
       unless (@board[king_position[0] - 1][king_position[1] - 1].nil?)
         # Left pawn
@@ -1309,7 +1336,7 @@ class Board
     enemy_color = "white" if turn_color == "black"
 
     # Make sure the king cannot move
-    return false if valid_king(king_position, turn_color).empty?
+    return false unless valid_king(king_position, turn_color).empty?
 
     # Gather the attacking pieces
     # Check to see if they can be captured to remove the check
@@ -1324,6 +1351,18 @@ class Board
     # Then color check matching the turn_color of the king
     # For each coords in attacker_path, check if there is a valid_move using the current loops as the start and attacker_path in position
     # Return false if valid_move is true
+    blocks = possible_blocks(king_position, turn_color)
+    8.times do |row|
+      8.times do |col|
+        unless (@board[row][col].nil?)
+          if (@board[row][col].color == turn_color)
+            blocks.each do |possible_block|
+              return false if valid_move?([row, col], possible_block, turn_color)
+            end
+          end
+        end
+      end
+    end
 
     true
   end
@@ -1834,14 +1873,14 @@ class Board
           if (@board[check[0] - 1][check[1] - 1].type == "B" && @board[check[0] - 1][check[1] - 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] += 1
             end
           elsif (@board[check[0] - 1][check[1] - 1].type == "Q" && @board[check[0] - 1][check[1] - 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] += 1
             end
@@ -1858,14 +1897,14 @@ class Board
           if (@board[check[0] - 1][check[1] + 1].type == "B" && @board[check[0] - 1][check[1] + 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] -= 1
             end
           elsif (@board[check[0] - 1][check[1] + 1].type == "Q" && @board[check[0] - 1][check[1] + 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] -= 1
             end
@@ -1882,14 +1921,14 @@ class Board
           if (@board[check[0] + 1][check[1] - 1].type == "B" && @board[check[0] + 1][check[1] - 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] += 1
             end
           elsif (@board[check[0] + 1][check[1] - 1].type == "Q" && @board[check[0] + 1][check[1] - 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] += 1
             end
@@ -1906,14 +1945,14 @@ class Board
           if (@board[check[0] + 1][check[1] + 1].type == "B" && @board[check[0] + 1][check[1] + 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] -= 1
             end
           elsif (@board[check[0] + 1][check[1] + 1].type == "Q" && @board[check[0] + 1][check[1] + 1].color == "black")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] -= 1
             end
@@ -2021,14 +2060,14 @@ class Board
           if (@board[check[0] - 1][check[1] - 1].type == "B" && @board[check[0] - 1][check[1] - 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] += 1
             end
           elsif (@board[check[0] - 1][check[1] - 1].type == "Q" && @board[check[0] - 1][check[1] - 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] += 1
             end
@@ -2045,14 +2084,14 @@ class Board
           if (@board[check[0] - 1][check[1] + 1].type == "B" && @board[check[0] - 1][check[1] + 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] -= 1
             end
           elsif (@board[check[0] - 1][check[1] + 1].type == "Q" && @board[check[0] - 1][check[1] + 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] += 1
               reverse[1] -= 1
             end
@@ -2069,14 +2108,14 @@ class Board
           if (@board[check[0] + 1][check[1] - 1].type == "B" && @board[check[0] + 1][check[1] - 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] += 1
             end
           elsif (@board[check[0] + 1][check[1] - 1].type == "Q" && @board[check[0] + 1][check[1] - 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] += 1
             end
@@ -2093,14 +2132,14 @@ class Board
           if (@board[check[0] + 1][check[1] + 1].type == "B" && @board[check[0] + 1][check[1] + 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] -= 1
             end
           elsif (@board[check[0] + 1][check[1] + 1].type == "Q" && @board[check[0] + 1][check[1] + 1].color == "white")
             reverse = check
             until (reverse == king_position)
-              block_positions.push(reverse)
+              block_positions.push([reverse[0], reverse[1]])
               reverse[0] -= 1
               reverse[1] -= 1
             end
@@ -2113,6 +2152,56 @@ class Board
     end
 
     block_positions
+  end
+
+  def all_king_moves(piece_color)
+
+    # A variant of valid_king that finds all possible movements of the king on the board, regardless of movement limitations
+    # This is to be used for achieving checkmate, to prevent the kings from entering check on each other
+
+    start = find_king(piece_color)
+
+    king_moves = []
+
+    # Move up
+    if (start[0] > 0)
+      king_moves.push([start[0] - 1, start[1]])
+
+      # Move up and left
+      if (start[1] > 0)
+        king_moves.push([start[0] - 1, start[1] - 1])
+      end
+
+      # Move up and right
+      if (start[1] < 7)
+        king_moves.push([start[0] - 1, start[1] + 1])
+      end
+    end
+
+    # Move down
+    if (start[0] < 7)
+      king_moves.push([start[0] + 1, start[1]])
+
+      # Move up and left
+      if (start[1] > 0)
+        king_moves.push([start[0] + 1, start[1] - 1])
+      end
+
+      # Move up and right
+      if (start[1] < 7)
+        king_moves.push([start[0] + 1, start[1] + 1])
+      end
+    end
+
+    # Move left
+    if (start[1] > 0)
+      king_moves.push([start[0], start[1] - 1])
+    end
+
+    # Move right
+    if (start[1] < 7)
+      king_moves.push([start[0], start[1] + 1])
+    end
   end
 
 end

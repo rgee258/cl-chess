@@ -979,8 +979,184 @@ describe Board do
         @game_board.update_piece([2, 3], 11)
         @game_board.move_piece([1, 2], [3, 2], "black", 12, false, false)
         @game_board.update_piece([3, 2], 12)
-        puts @game_board.display_board
         expect(@game_board.possible_blocks(@game_board.find_king("white"), "white")).to eql([[3, 3], [4, 3]])
+      end
+    end
+
+    context "given only rooks, bishops, queens, and kings" do
+      it "returns the spaces of the enemy pieces that can be blocked to remove check" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_rooks
+        @game_board.add_bishops
+        @game_board.add_queens
+        @game_board.move_piece([7, 4], [6, 4], "white", 1, false, false)
+        @game_board.update_piece([6, 4], 1)
+        @game_board.move_piece([0, 2], [2, 0], "black", 2, false, false)
+        @game_board.update_piece([2, 0], 2)
+        @game_board.move_piece([0, 3], [1, 4], "black", 3, false, false)
+        @game_board.update_piece([1, 4], 3)
+        @game_board.move_piece([0, 7], [6, 7], "black", 4, false, false)
+        @game_board.update_piece([6, 7], 4)
+        expect(@game_board.possible_blocks(@game_board.find_king("white"), "white")).to eql([[2, 4], [3, 4], [4, 4], [5, 4], [6, 6], [6, 5], [3, 1], [4, 2], [5, 3]])
+      end
+    end
+  end
+
+  describe "#checkmate" do
+    context "given a game where white has lost in two moves (Fool's Mate)" do
+      it "returns true that white is in checkmate" do
+        @game_board.create_board
+        @game_board.add_pieces
+        @game_board.move_piece([6, 5], [5, 5], "white", 1, false, false)
+        @game_board.update_piece([5, 5], 1)
+        @game_board.move_piece([1, 4], [3, 4], "black", 2, false, false)
+        @game_board.update_piece([3, 4], 2)
+        @game_board.move_piece([6, 6], [4, 6], "white", 3, false, false)
+        @game_board.update_piece([4, 6], 3)
+        @game_board.move_piece([0, 3], [4, 7], "black", 4, false, false)
+        @game_board.update_piece([4, 7], 4)
+        expect(@game_board.checkmate?("white")).to eql(true)
+      end
+    end
+
+    context "given a game where there is only the black king, white king, and white queen" do
+      it "returns true when the black king is pinned to e8" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_queens
+        @game_board.move_piece([7, 4], [6, 4], "white", 1, false, false)
+        @game_board.move_piece([6, 4], [5, 4], "white", 2, false, false)
+        @game_board.move_piece([5, 4], [4, 4], "white", 3, false, false)
+        @game_board.move_piece([4, 4], [3, 4], "white", 4, false, false)
+        @game_board.move_piece([3, 4], [2, 4], "white", 5, false, false)
+        @game_board.move_piece([7, 3], [0, 3], "white", 6, false, false)
+        @game_board.move_piece([0, 3], [1, 4], "white", 7, false, false)
+        expect(@game_board.checkmate?("black")).to eql(true)
+      end
+    end
+
+    context "given a game where there is only a white rook, white king, and black king" do
+      it "returns true when the king is pinned to d1 (right triangle mate)" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_rooks
+        @game_board.move_piece([0, 4], [0, 3], "black", 1, false, false)
+        @game_board.move_piece([7, 4], [6, 3], "white", 1, false, false)
+        @game_board.move_piece([0, 0], [7, 0], "black", 1, false, false)
+        @game_board.move_piece([7, 7], [7, 0], "white", 1, false, false)
+        @game_board.move_piece([7, 0], [7, 7], "white", 1, false, false)
+        @game_board.move_piece([6, 3], [5, 3], "white", 1, false, false)
+        @game_board.move_piece([5, 3], [4, 3], "white", 1, false, false)
+        @game_board.move_piece([4, 3], [3, 3], "white", 1, false, false)
+        @game_board.move_piece([3, 3], [2, 3], "white", 1, false, false)
+        @game_board.move_piece([7, 7], [0, 7], "white", 1, false, false)
+        @game_board.move_piece([0, 3], [0, 2], "black", 1, false, false)
+        @game_board.move_piece([2, 3], [2, 2], "white", 1, false, false)
+        @game_board.move_piece([0, 2], [0, 1], "black", 1, false, false)
+        @game_board.move_piece([2, 2], [2, 1], "white", 1, false, false)
+        @game_board.move_piece([0, 1], [0, 0], "black", 1, false, false)
+        @game_board.move_piece([2, 1], [2, 0], "white", 1, false, false)
+        expect(@game_board.checkmate?("black")).to eql(true)
+      end
+    end
+
+    context "given a game where there is only two white bishops, white king, and black king" do
+      it "returns true when the king is pinned to a8" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_bishops
+        @game_board.move_piece([7, 2], [5, 0], "white", 1, false, false)
+        @game_board.move_piece([7, 5], [5, 7], "white", 1, false, false)
+        @game_board.move_piece([5, 0], [0, 5], "white", 1, false, false)
+        @game_board.move_piece([5, 7], [0, 2], "white", 1, false, false)
+        @game_board.move_piece([0, 2], [2, 4], "white", 1, false, false)
+        @game_board.move_piece([2, 4], [0, 6], "white", 1, false, false)
+        @game_board.move_piece([0, 4], [0, 3], "black", 1, false, false)
+        @game_board.move_piece([0, 3], [0, 2], "black", 1, false, false)
+        @game_board.move_piece([0, 2], [0, 1], "black", 1, false, false)
+        @game_board.move_piece([0, 1], [0, 0], "black", 1, false, false)
+        @game_board.move_piece([7, 4], [7, 3], "white", 1, false, false)
+        @game_board.move_piece([7, 3], [7, 2], "white", 1, false, false)
+        @game_board.move_piece([7, 2], [7, 1], "white", 1, false, false)
+        @game_board.move_piece([7, 1], [6, 1], "white", 1, false, false)
+        @game_board.move_piece([6, 1], [5, 1], "white", 1, false, false)
+        @game_board.move_piece([5, 1], [4, 1], "white", 1, false, false)
+        @game_board.move_piece([4, 1], [3, 1], "white", 1, false, false)
+        @game_board.move_piece([3, 1], [2, 1], "white", 1, false, false)
+        @game_board.move_piece([0, 5], [2, 3], "white", 1, false, false)
+        @game_board.move_piece([2, 3], [1, 2], "white", 1, false, false)
+        expect(@game_board.checkmate?("black")).to eql(true)
+      end
+    end
+
+    context "given a game where there is only two white bishops, white king, and black king" do
+      it "returns true when the king is pinned to a8" do
+        @game_board.create_board
+        @game_board.add_kings
+        @game_board.add_bishops
+        @game_board.add_knights
+        @game_board.move_piece([0, 1], [2, 0], "black", 1, false, false)
+        @game_board.move_piece([0, 6], [2, 7], "black", 1, false, false)
+        @game_board.move_piece([7, 5], [2, 0], "white", 1, false, false)
+        @game_board.move_piece([2, 0], [7, 5], "white", 1, false, false)
+        @game_board.move_piece([7, 2], [2, 7], "white", 1, false, false)
+        @game_board.move_piece([2, 7], [7, 2], "white", 1, false, false)
+        @game_board.move_piece([7, 1], [5, 0], "white", 1, false, false)
+        @game_board.move_piece([0, 5], [5, 0], "black", 1, false, false)
+        @game_board.move_piece([5, 0], [0, 5], "black", 1, false, false)
+        @game_board.move_piece([0, 2], [2, 0], "black", 1, false, false)
+        @game_board.move_piece([7, 5], [2, 0], "white", 1, false, false)
+        @game_board.move_piece([2, 0], [7, 5], "white", 1, false, false)
+        @game_board.move_piece([7, 2], [5, 0], "white", 1, false, false)
+        @game_board.move_piece([0, 5], [5, 0], "black", 1, false, false)
+        @game_board.move_piece([5, 0], [7, 2], "black", 1, false, false)
+        @game_board.move_piece([7, 4], [7, 3], "white", 1, false, false)
+        @game_board.move_piece([7, 3], [7, 2], "white", 1, false, false)
+        @game_board.move_piece([0, 4], [0, 3], "black", 1, false, false)
+        @game_board.move_piece([0, 3], [0, 2], "black", 1, false, false)
+        @game_board.move_piece([0, 2], [0, 1], "black", 1, false, false)
+        @game_board.move_piece([0, 1], [0, 0], "black", 1, false, false)
+        @game_board.move_piece([7, 2], [6, 1], "white", 1, false, false)
+        @game_board.move_piece([7, 6], [6, 4], "white", 1, false, false)
+        @game_board.move_piece([6, 4], [7, 2], "white", 1, false, false)
+        @game_board.move_piece([7, 2], [6, 0], "white", 1, false, false)
+        @game_board.move_piece([6, 0], [4, 1], "white", 1, false, false)
+        @game_board.move_piece([4, 1], [2, 0], "white", 1, false, false)
+        @game_board.move_piece([6, 1], [5, 1], "white", 1, false, false)
+        @game_board.move_piece([5, 1], [4, 1], "white", 1, false, false)
+        @game_board.move_piece([4, 1], [3, 1], "white", 1, false, false)
+        @game_board.move_piece([3, 1], [2, 1], "white", 1, false, false)
+        @game_board.move_piece([7, 5], [6, 6], "white", 1, false, false)
+        @game_board.move_piece([6, 6], [2, 2], "white", 1, false, false)
+        expect(@game_board.checkmate?("black")).to eql(true)
+      end
+    end
+
+    context "given a game where black has lost in four moves (Scholar's Mate)" do
+      it "returns true that white is in checkmate" do
+        @game_board.create_board
+        @game_board.add_pieces
+        @game_board.move_piece([6, 4], [4, 4], "white", 1, false, false)
+        @game_board.move_piece([1, 4], [3, 4], "black", 1, false, false)
+        @game_board.move_piece([7, 3], [3, 7], "white", 1, false, false)
+        @game_board.move_piece([0, 1], [2, 2], "black", 1, false, false)
+        @game_board.move_piece([7, 5], [4, 2], "white", 1, false, false)
+        @game_board.move_piece([0, 6], [2, 5], "black", 1, false, false)
+        @game_board.move_piece([3, 7], [1, 5], "white", 1, false, false)
+        puts @game_board.display_board
+        expect(@game_board.checkmate?("black")).to eql(true)
+      end
+    end
+
+  end
+
+  describe "#all_king_moves" do
+    context "given a starting board" do
+      it "returns all possible moves in an array for the king possible on the board without interference" do
+        @game_board.create_board
+        @game_board.add_pieces
+        expect(@game_board.all_king_moves("white")).to eql([[6, 4], [6, 3], [6, 5], [7, 3], [7, 5]])
       end
     end
   end

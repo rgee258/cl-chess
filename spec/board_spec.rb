@@ -1144,7 +1144,6 @@ describe Board do
         @game_board.move_piece([7, 5], [4, 2], "white", 1, false, false)
         @game_board.move_piece([0, 6], [2, 5], "black", 1, false, false)
         @game_board.move_piece([3, 7], [1, 5], "white", 1, false, false)
-        puts @game_board.display_board
         expect(@game_board.checkmate?("black")).to eql(true)
       end
     end

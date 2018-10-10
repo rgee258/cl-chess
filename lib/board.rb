@@ -1,3 +1,5 @@
+require_relative "piece"
+
 class Board
 
   attr_reader :board
@@ -6,7 +8,7 @@ class Board
     @board = []
   end
 
-  # Game setup
+  # Board setup
 
   def create_board
     8.times do
@@ -97,13 +99,9 @@ class Board
     display
   end
 
+  # Board movements
+
   def move_piece(start, finish, turn_color, turn_count, castling_used, in_check)
-
-    # HOW do we keep track of which side's piece can move for the current turn?
-    # Perhaps pass in the current color and do it that way for the starting piece?
-
-    # If we're starting at a place that's nil just point that piece there and make the original nil
-    # If we're capturing a piece, make the finish position nil, change it to the original, and then nil the origin
 
     # Invalid start piece movement
     if (@board[start[0]][start[1]].nil?)
@@ -115,12 +113,10 @@ class Board
       return "Invalid piece movement, try again."
     end
 
+    # Move if we're not in check
     if (in_check == false)
 
-      # Return a string stating the move OR
-      # Return that the move was invalid
-
-      # Call example: valid_move?(@board[start[0]][start[1]].type, turn_color, )
+      # Check if the move is valid and then move pieces
       if (valid_move?(start, finish, turn_color))
         @board[finish[0]][finish[1]] = @board[start[0]][start[1]]
         @board[start[0]][start[1]] = nil
@@ -133,9 +129,11 @@ class Board
         return en_passant_move if en_passant_move != "Invalid piece movement, try again."
       elsif (@board[start[0]][start[1]].type == "K")
         castling_move = castling(start, finish, turn_color, castling_used)
+        return castling_move if castling_move != "Invalid piece movement, try again."
       end
 
       "Invalid piece movement, try again."
+    # Move if we are in check
     elsif (in_check == true)
       start_piece = @board[start[0]][start[1]]
       finish_piece = @board[finish[0]][finish[1]]
@@ -151,9 +149,9 @@ class Board
             return "Piece moved, you are no longer in check."
           end
         else
+          # Special case of en passant to ensure that it removes the attacking piece causing check
           if (@board[start[0]][start[1]].type == "P" && @board[finish[0]][finish[1]].nil? && start[1] != finish[1])
             if (finish[0] == start[0] - 1 && !(@board[finish[0] + 1][finish[1]].nil?))
-              "reached"
               if (@board[finish[0] + 1][finish[1]].type == "P")
                 finish_piece = @board[finish[0] - 1][finish[1]]
                 if (en_passant(start, finish, turn_color, turn_count) == "En passant performed.")
@@ -180,6 +178,7 @@ class Board
             return "Piece moved, you are no longer in check."
           end
         else
+           # Special case of en passant to ensure that it removes the attacking piece causing check
           if (@board[start[0]][start[1]].type == "P" && @board[finish[0]][finish[1]].nil? && start[1] != finish[1])
             if (finish[0] == start[0] + 1 && !(@board[finish[0] - 1][finish[1]].nil?))
               if (@board[finish[0] - 1][finish[1]].type == "P")
@@ -199,8 +198,6 @@ class Board
         end
       end
 
-      # Perform a check? on the current king matching turn_color
-      # If in check still,  undo the piece move and return below
       "Invalid piece movement, you are still in check."
     end
   end
@@ -212,7 +209,7 @@ class Board
   end
 
   def castling(king_start, king_finish, turn_color, castling_used)
-    # Code for castling here
+    # You can only use castling once per game
     if (castling_used == false)
       if (turn_color == "white")
         # Right rook
@@ -240,9 +237,9 @@ class Board
           # Check if both spots to the left are empty
           if (@board[7][3].nil? && @board[7][2].nil?)
             unless (@board[7][0].nil?)
-              # Check rook requirements
+              # Check castling requirements
               if (@board[7][0].type == "R" && @board[7][0].last_moved == 0)
-                # Use unless to ensure the king positions being moved do not result in check
+                # Ensure the king positions being moved do not result in check
                 unless (check?([7, 3], "white"))
                   unless (check?([7, 2], "white"))
                     @board[7][2] = @board[7][4]
@@ -262,9 +259,9 @@ class Board
           # Check if both spots to the right are empty
           if (@board[0][5].nil? && @board[0][6].nil?)
             unless (@board[0][7].nil?)
-              # Check rook requirements
+              # Check castling requirements
               if (@board[0][7].type == "R" && @board[0][7].last_moved == 0)
-                # Use unless to ensure the king positions being moved do not result in check
+                # Ensure the king positions being moved do not result in check
                 unless (check?([0, 5], "black"))
                   unless (check?([0, 6], "black"))
                     @board[0][6] = @board[0][4]
@@ -373,13 +370,13 @@ class Board
     piece_type = @board[start[0]][start[1]].type
 
     # Call validity checks based on piece type
+    # Use include here to make sure our finish position is among the available valid moves for that piece
     if (piece_type == "K")
-      return true if valid_king(start, turn_color).include?(finish)
-      # Put these in an if, make a separate method for handling king moves in check
+      return valid_king(start, turn_color).include?(finish)
     elsif (piece_type == "Q")
-      return true if valid_queen(start, turn_color).include?(finish)
+      return valid_queen(start, turn_color).include?(finish)
     elsif (piece_type == "B")
-      return true if valid_bishop(start, turn_color).include?(finish)
+      return valid_bishop(start, turn_color).include?(finish)
     elsif (piece_type == "R")
       return valid_rook(start, turn_color).include?(finish)
     elsif (piece_type == "N")
@@ -387,11 +384,8 @@ class Board
     elsif (piece_type == "P")
       return valid_pawn(start, turn_color).include?(finish)
     end
-
-    false
   end
 
-  # Remove the finish in all of the valid methods
   def valid_king(start, turn_color)
     moves = []
 
@@ -480,7 +474,7 @@ class Board
       moves.delete(remove)
     end
 
-    # Check here for moves overlapping with the enemy king
+    # Check here for moves overlapping with the enemy king and remove them
 
     enemy_color = "black" if turn_color == "white"
     enemy_color = "white" if turn_color == "black"
@@ -928,14 +922,10 @@ class Board
   end
 
   def check?(king_position, turn_color)
-    # Reuse the above code, doing the movement of a queen (rook + bishop) and knight from the king start
-    # Identify specific cases (pawn) based off of bishop
-    # If a piece is found that can reach the king and is of opposite color then mark for check
-    # Set the player check value to true
+    # Mimic the movements of a queen in reverse essentially, going outwards to find specific pieces that threaten the king
 
     # White king
     if (turn_color == "white")
-      # How exactly do we check for enemy kings
 
       # Check for pawns
       unless (@board[king_position[0] - 1][king_position[1] - 1].nil?)
@@ -963,7 +953,7 @@ class Board
       # Knight located up 2, right 1
       if (king_position[0] > 1 && king_position[1] < 7)
         unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
-          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "black")
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] + 1].color == "black")
             return true
           end
         end
@@ -1158,7 +1148,7 @@ class Board
       # Knight located up 2, right 1
       if (king_position[0] > 1 && king_position[1] < 7)
         unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
-          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "white")
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] + 1].color == "white")
             return true
           end
         end
@@ -1330,6 +1320,7 @@ class Board
   end
 
   def checkmate?(turn_color)
+    # Checkmate is called assuming check? is already true
 
     king_position = find_king(turn_color)
     enemy_color = "black" if turn_color == "white"
@@ -1345,12 +1336,8 @@ class Board
       return false if check?(location, enemy_color)
     end
 
-    # Find attacker paths (all positions that can block the attacker) in array
-    # For each position on the board (use 8.times loops)
-    # Do nil check
-    # Then color check matching the turn_color of the king
-    # For each coords in attacker_path, check if there is a valid_move using the current loops as the start and attacker_path in position
-    # Return false if valid_move is true
+    # Find attacker paths and for each board position check if it is the color of the player in check
+    # Then check if each piece found has a valid move that can block, if not we're in checkmate
     blocks = possible_blocks(king_position, turn_color)
     8.times do |row|
       8.times do |col|
@@ -1369,7 +1356,7 @@ class Board
 
   def find_attackers(king_position, turn_color)
 
-  # This method is a variant of check?
+  # This method is a variant of check? that finds attacking paths for queens, bishops, and rooks
   # Instead of returning true/false, it gathers the attacking piece coordinates in an array and returns them
 
     attackers = []
@@ -1402,7 +1389,7 @@ class Board
       # Knight located up 2, right 1
       if (king_position[0] > 1 && king_position[1] < 7)
         unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
-          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "black")
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] + 1].color == "black")
             attackers.push([king_position[0] - 2, king_position[1] + 1])
           end
         end
@@ -1597,7 +1584,7 @@ class Board
       # Knight located up 2, right 1
       if (king_position[0] > 1 && king_position[1] < 7)
         unless (@board[king_position[0] - 2][king_position[1] + 1].nil?)
-          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] - 1].color == "white")
+          if (@board[king_position[0] - 2][king_position[1] + 1].type == "N" && @board[king_position[0] - 2][king_position[1] + 1].color == "white")
             attackers.push([king_position[0] - 2, king_position[1] + 1])
           end
         end
